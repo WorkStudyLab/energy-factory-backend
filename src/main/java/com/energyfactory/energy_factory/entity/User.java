@@ -19,7 +19,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,unique = true, columnDefinition = "varchar(255) COMMENT '이메일'")
+    @Column(nullable = false, unique = true, columnDefinition = "varchar(255) COMMENT '이메일'")
     private String email;
 
     @Column(nullable = false, columnDefinition = "varchar(255) COMMENT '비밀번호'")
@@ -28,7 +28,7 @@ public class User {
     @Column(nullable = false, columnDefinition = "varchar(100) COMMENT '이름'")
     private String name;
 
-    @Column(name = "phone_number", nullable = false,unique = true, columnDefinition = "varchar(20) COMMENT '전화번호'")
+    @Column(name = "phone_number", nullable = false, unique = true, columnDefinition = "varchar(20) COMMENT '전화번호'")
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
@@ -53,4 +53,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Order> orders = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserAddress> addresses = new ArrayList<>();
 }
