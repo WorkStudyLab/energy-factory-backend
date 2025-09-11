@@ -1,0 +1,91 @@
+package com.energyfactory.energy_factory.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Builder
+@Schema(description = "상품 응답 DTO")
+public class ProductResponseDto {
+
+    @Schema(description = "상품 ID", example = "1")
+    private Long id;
+
+    @Schema(description = "상품명", example = "한우 등심 500g")
+    private String name;
+
+    @Schema(description = "가격", example = "29900.00")
+    private BigDecimal price;
+
+    @Schema(description = "카테고리", example = "고기")
+    private String category;
+
+    @Schema(description = "이미지 URL", example = "https://example.com/image.jpg")
+    private String imageUrl;
+
+    @Schema(description = "브랜드명", example = "프리미엄 한우")
+    private String brand;
+
+    @Schema(description = "중량", example = "500.00")
+    private BigDecimal weight;
+
+    @Schema(description = "중량 단위", example = "g")
+    private String weightUnit;
+
+    @Schema(description = "상품 설명", example = "신선하고 맛있는 한우 등심입니다.")
+    private String description;
+
+    @Schema(description = "재고 수량", example = "100")
+    private Long stock;
+
+    @Schema(description = "판매 상태", example = "AVAILABLE")
+    private String status;
+
+    @Schema(description = "보관 방법", example = "냉장보관")
+    private String storage;
+
+    @Schema(description = "등록일", example = "2024-01-01T10:00:00")
+    private LocalDateTime createdAt;
+
+    @Schema(description = "수정일", example = "2024-01-01T10:00:00")
+    private LocalDateTime updatedAt;
+
+    @Schema(description = "태그 목록")
+    private List<TagResponseDto> tags;
+
+    @Schema(description = "영양성분 목록")
+    private List<NutrientResponseDto> nutrients;
+
+    @Getter
+    @Builder
+    @Schema(description = "태그 정보")
+    public static class TagResponseDto {
+        @Schema(description = "태그 ID", example = "1")
+        private Long id;
+
+        @Schema(description = "태그명", example = "고단백")
+        private String name;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "영양성분 정보")
+    public static class NutrientResponseDto {
+        @Schema(description = "영양성분 ID", example = "1")
+        private Long id;
+
+        @Schema(description = "영양소명", example = "단백질")
+        private String name;
+
+        @Schema(description = "함량", example = "25.5")
+        private String value;
+
+        @Schema(description = "단위", example = "g")
+        private String unit;
+    }
+}
