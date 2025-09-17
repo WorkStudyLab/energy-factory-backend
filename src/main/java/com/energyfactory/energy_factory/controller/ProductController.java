@@ -2,6 +2,7 @@ package com.energyfactory.energy_factory.controller;
 
 import com.energyfactory.energy_factory.dto.ProductListResponseDto;
 import com.energyfactory.energy_factory.dto.ProductResponseDto;
+import com.energyfactory.energy_factory.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,8 +31,16 @@ public class ProductController {
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 요청",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductListResponseDto> getProducts(
             @Parameter(description = "카테고리 필터 (예: 고기, 채소, 생선)", example = "고기")
@@ -82,8 +91,16 @@ public class ProductController {
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = ProductResponseDto.class))
         ),
-        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "404", 
+            description = "상품을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductResponseDto> getProduct(
             @Parameter(description = "상품 ID", example = "1")
@@ -104,8 +121,16 @@ public class ProductController {
             description = "조회 성공",
             content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 카테고리"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 카테고리",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductListResponseDto> getProductsByCategory(
             @Parameter(description = "카테고리명 (고기, 채소, 생선 등)", example = "고기")
@@ -141,8 +166,16 @@ public class ProductController {
             description = "검색 성공",
             content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 검색어"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 검색어",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductListResponseDto> searchProducts(
             @Parameter(description = "검색 키워드", example = "한우", required = true)

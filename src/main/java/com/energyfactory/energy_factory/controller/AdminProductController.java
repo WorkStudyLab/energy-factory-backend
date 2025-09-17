@@ -2,6 +2,7 @@ package com.energyfactory.energy_factory.controller;
 
 import com.energyfactory.energy_factory.dto.ProductCreateRequestDto;
 import com.energyfactory.energy_factory.dto.ProductResponseDto;
+import com.energyfactory.energy_factory.dto.ErrorResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +31,26 @@ public class AdminProductController {
             description = "상품 등록 성공",
             content = @Content(schema = @Schema(implementation = ProductResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 요청 데이터",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductResponseDto> createProduct(
             @Parameter(description = "상품 생성 정보", required = true)
@@ -54,11 +71,31 @@ public class AdminProductController {
             description = "상품 수정 성공",
             content = @Content(schema = @Schema(implementation = ProductResponseDto.class))
         ),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 요청 데이터",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "상품을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<ProductResponseDto> updateProduct(
             @Parameter(description = "상품 ID", example = "1")
@@ -78,11 +115,31 @@ public class AdminProductController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "상품 삭제 성공"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "409", description = "삭제할 수 없음 (주문 내역 존재)"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "401", 
+            description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "상품을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "409", 
+            description = "삭제할 수 없음 (주문 내역 존재)",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "상품 ID", example = "1")
@@ -99,11 +156,31 @@ public class AdminProductController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "재고 업데이트 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 재고 수량"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 재고 수량",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "상품을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<Void> updateStock(
             @Parameter(description = "상품 ID", example = "1")
@@ -123,11 +200,31 @@ public class AdminProductController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "상태 변경 성공"),
-        @ApiResponse(responseCode = "400", description = "잘못된 상태 값"),
-        @ApiResponse(responseCode = "401", description = "인증 실패"),
-        @ApiResponse(responseCode = "403", description = "권한 없음"),
-        @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
+        @ApiResponse(
+            responseCode = "400", 
+            description = "잘못된 상태 값",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "인증 실패",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "403", 
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "상품을 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        ),
+        @ApiResponse(
+            responseCode = "500", 
+            description = "서버 오류",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        )
     })
     public ResponseEntity<Void> updateStatus(
             @Parameter(description = "상품 ID", example = "1")
