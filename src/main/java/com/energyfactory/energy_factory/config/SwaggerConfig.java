@@ -14,10 +14,12 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Energy Factory API")
-                        .description("쇼핑몰 백엔드 API 문서")
+                        .description("백엔드 API 문서")
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("Energy Factory Team")
                                 .email("contact@energyfactory.com")));
+
+
     }
 }
