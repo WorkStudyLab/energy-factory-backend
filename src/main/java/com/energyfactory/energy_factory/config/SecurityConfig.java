@@ -20,6 +20,15 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
+                        // Swagger UI 관련 경로 허용
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // 나머지 모든 요청 허용 (개발 환경)
                         .anyRequest().permitAll()
                 )
                 .formLogin(formLogin -> formLogin.disable());
