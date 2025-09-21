@@ -54,7 +54,6 @@ public class UserController {
             )
     })
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(
-            @Parameter(description = "회원가입 요청 정보", required = true)
             @Valid @RequestBody SignupRequestDto signupRequestDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
