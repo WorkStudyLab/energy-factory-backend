@@ -48,11 +48,6 @@ public class UserController {
                     )
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청 (유효성 검사 실패)",
-                    content = @Content(mediaType = "application/json")
-            ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "409",
                     description = "이미 존재하는 이메일",
                     content = @Content(mediaType = "application/json")
