@@ -12,6 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 결제 관리 컨트롤러
+ * 주문별 결제 정보 조회 및 환불 처리 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/payments")
 @Tag(name = "Payment", description = "결제 관련 API")

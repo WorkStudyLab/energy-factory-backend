@@ -12,6 +12,10 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 상품 관리 컨트롤러
+ * 상품 목록 조회, 상세 조회, 카테고리별 조회, 검색 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/products")
 @Tag(name = "Product", description = "상품 관련 API")

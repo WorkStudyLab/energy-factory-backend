@@ -13,6 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 주문 관리 컨트롤러
+ * 주문 생성, 조회, 취소 등의 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/orders")
 @Tag(name = "Order", description = "주문 관련 API")

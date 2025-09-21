@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 태그 관리 컨트롤러
+ * 상품 태그 목록 조회, 상세 조회, 인기 태그 조회 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/tags")
 @Tag(name = "Tag", description = "태그 관련 API")

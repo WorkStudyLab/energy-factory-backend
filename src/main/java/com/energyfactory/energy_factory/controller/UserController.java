@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+/**
+ * 사용자 인증 컨트롤러
+ * 회원가입, 로그인 등 사용자 인증 관련 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "User Authentication", description = "사용자 인증 관련 API")
