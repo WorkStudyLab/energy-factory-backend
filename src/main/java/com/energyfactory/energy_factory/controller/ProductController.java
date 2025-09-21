@@ -1,13 +1,14 @@
 package com.energyfactory.energy_factory.controller;
 
+import com.energyfactory.energy_factory.dto.ApiResponse;
 import com.energyfactory.energy_factory.dto.ProductListResponseDto;
 import com.energyfactory.energy_factory.dto.ProductResponseDto;
 import com.energyfactory.energy_factory.dto.ErrorResponseDto;
+import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
@@ -26,23 +27,23 @@ public class ProductController {
         description = "페이징과 필터링이 가능한 상품 목록을 조회합니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
+            content = @Content(schema = @Schema(implementation = com.energyfactory.energy_factory.dto.ApiResponse.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400", 
             description = "잘못된 요청",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "500", 
             description = "서버 오류",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         )
     })
-    public ResponseEntity<ProductListResponseDto> getProducts(
+    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<ProductListResponseDto>> getProducts(
             @Parameter(description = "카테고리 필터 (예: 고기, 채소, 생선)", example = "고기")
             @RequestParam(required = false) String category,
             
@@ -77,7 +78,7 @@ public class ProductController {
                         .build())
                 .build();
         
-        return ResponseEntity.ok(mockResponse);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, mockResponse));
     }
 
     @GetMapping("/{id}")
@@ -86,23 +87,23 @@ public class ProductController {
         description = "특정 상품의 상세 정보를 조회합니다. 태그와 영양정보가 포함됩니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ProductResponseDto.class))
+            content = @Content(schema = @Schema(implementation = com.energyfactory.energy_factory.dto.ApiResponse.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404", 
             description = "상품을 찾을 수 없음",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "500", 
             description = "서버 오류",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         )
     })
-    public ResponseEntity<ProductResponseDto> getProduct(
+    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<ProductResponseDto>> getProduct(
             @Parameter(description = "상품 ID", example = "1")
             @PathVariable Long id
     ) {
@@ -116,23 +117,23 @@ public class ProductController {
         description = "특정 카테고리의 상품 목록을 조회합니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
+            content = @Content(schema = @Schema(implementation = com.energyfactory.energy_factory.dto.ApiResponse.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400", 
             description = "잘못된 카테고리",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "500", 
             description = "서버 오류",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         )
     })
-    public ResponseEntity<ProductListResponseDto> getProductsByCategory(
+    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<ProductListResponseDto>> getProductsByCategory(
             @Parameter(description = "카테고리명 (고기, 채소, 생선 등)", example = "고기")
             @PathVariable String category,
             
@@ -152,7 +153,7 @@ public class ProductController {
                         .build())
                 .build();
         
-        return ResponseEntity.ok(mockResponse);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, mockResponse));
     }
 
     @GetMapping("/search")
@@ -161,23 +162,23 @@ public class ProductController {
         description = "키워드로 상품을 검색합니다. 상품명, 브랜드명, 설명에서 검색됩니다."
     )
     @ApiResponses({
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "검색 성공",
-            content = @Content(schema = @Schema(implementation = ProductListResponseDto.class))
+            content = @Content(schema = @Schema(implementation = com.energyfactory.energy_factory.dto.ApiResponse.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400", 
             description = "잘못된 검색어",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         ),
-        @ApiResponse(
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "500", 
             description = "서버 오류",
             content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
         )
     })
-    public ResponseEntity<ProductListResponseDto> searchProducts(
+    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<ProductListResponseDto>> searchProducts(
             @Parameter(description = "검색 키워드", example = "한우", required = true)
             @RequestParam String q,
             
@@ -200,6 +201,6 @@ public class ProductController {
                         .build())
                 .build();
         
-        return ResponseEntity.ok(mockResponse);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, mockResponse));
     }
 }
