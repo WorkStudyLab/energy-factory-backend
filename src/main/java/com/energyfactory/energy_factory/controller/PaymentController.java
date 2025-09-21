@@ -2,7 +2,6 @@ package com.energyfactory.energy_factory.controller;
 
 import com.energyfactory.energy_factory.dto.ErrorResponseDto;
 import com.energyfactory.energy_factory.dto.PaymentResponseDto;
-import com.energyfactory.energy_factory.dto.PaymentStatusUpdateRequestDto;
 import com.energyfactory.energy_factory.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
