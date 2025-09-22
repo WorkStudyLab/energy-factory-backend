@@ -31,19 +31,21 @@
 - ✅ **User 도메인 완전 구현** (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
 - ✅ **Tags 도메인 완전 구현** (CRUD, 검색, 인기 태그, 중복 검증)
 - ✅ **ProductTag 도메인 완전 구현** (상품-태그 연결, 태그 기반 상품 검색)
+- ✅ **UserAddress 도메인 완전 구현** (배송지 관리, 기본 배송지 설정)
 
 ### 현재 구현 상태
 - **ProductController:** ✅ 완성 (조회, 검색, 필터링 API)
 - **UserController:** ✅ 완성 (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
 - **TagController:** ✅ 완성 (CRUD, 검색, 인기 태그 API)
 - **ProductTagController:** ✅ 완성 (상품-태그 연결, 태그 기반 상품 검색 API)
+- **UserAddressController:** ✅ 완성 (배송지 CRUD, 기본 배송지 설정 API)
 - **OrderController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **PaymentController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **기타 컨트롤러:** API 스펙 정의만, 비즈니스 로직 미구현
 
 ### 다음 작업 예정
 1. **ProductTag 도메인 구현** ✅ 완료 (상품-태그 연결)
-2. **UserAddress 도메인 구현** (배송지 관리)
+2. **UserAddress 도메인 구현** ✅ 완료 (배송지 관리)
 3. **AuthController 도메인 구현** (로그인/로그아웃/토큰 관리)
 4. **Order, Payment 도메인 구현** (주문/결제 시스템)
 
@@ -402,6 +404,90 @@
 
 ---
 
+### 2025-09-22 - UserAddress 도메인 완전 구현
+
+**작업 목적:** 
+- 사용자별 배송지 관리 기능 완전 구현으로 주문 시스템 기반 마련
+- 기본 배송지 자동 관리 및 비즈니스 로직 구현
+- User 도메인과의 연관관계 설정으로 데이터 무결성 확보
+
+**담당자:** AI Assistant  
+**소요시간:** 약 1.5시간
+
+#### 작업 내용
+1. **UserAddress 엔티티 Lombok 적용**
+   - @Getter, @Builder, @NoArgsConstructor, @AllArgsConstructor 적용
+   - JPA Auditing 추가 (created_at, updated_at 자동 관리)
+   - 기본 배송지 관리를 위한 비즈니스 메서드 추가
+
+2. **UserAddressRepository 구현**
+   - JpaRepository 확장으로 기본 CRUD 제공
+   - 9개 전용 쿼리 메서드 구현
+   - @Modifying 쿼리로 기본 배송지 관리 최적화
+   - 사용자별 정렬 및 필터링 메서드
+
+3. **UserAddressService 비즈니스 로직 구현**
+   - 복잡한 기본 배송지 관리 로직 구현
+   - 배송지 CRUD 및 자동 기본 배송지 설정
+   - 기본 배송지 삭제 시 자동 승격 로직
+   - DTO 변환 및 에러 처리
+
+4. **UserAddressController API 완전 구현**
+   - TODO 메서드에서 실제 서비스 호출로 완전 교체
+   - 7개 API 엔드포인트 구현
+   - RESTful 설계 패턴 적용 (/api/users/{userId}/addresses)
+   - 적절한 HTTP 상태 코드 및 에러 응답
+
+5. **완전한 API 테스트**
+   - 모든 엔드포인트 기능 검증
+   - 기본 배송지 자동 관리 로직 테스트
+   - 에러 시나리오 및 비즈니스 규칙 검증
+
+#### 주요 변경사항
+**수정된 파일:**
+- `UserAddress.java`: Lombok 어노테이션 및 JPA Auditing 적용, 비즈니스 메서드 추가 (67줄)
+- `UserAddressService.java`: TODO → 완전한 비즈니스 로직 구현 (161줄)
+- `UserAddressController.java`: TODO → 실제 API 구현 (99줄)
+
+**새로 생성된 파일:**
+- `UserAddressRepository.java`: 9개 쿼리 메서드 구현 (36줄)
+
+#### 구현된 API 엔드포인트
+- `GET /api/users/{userId}/addresses` - 사용자 배송지 목록 조회
+- `POST /api/users/{userId}/addresses` - 배송지 등록
+- `GET /api/users/{userId}/addresses/{addressId}` - 배송지 상세 조회
+- `PUT /api/users/{userId}/addresses/{addressId}` - 배송지 수정
+- `DELETE /api/users/{userId}/addresses/{addressId}` - 배송지 삭제
+- `PATCH /api/users/{userId}/addresses/{addressId}/default` - 기본 배송지 설정
+- `GET /api/users/{userId}/addresses/default` - 기본 배송지 조회
+
+#### 기술적 의사결정
+- **복잡한 기본 배송지 로직:** 한 사용자당 하나의 기본 배송지만 유지
+- **자동 승격 로직:** 기본 배송지 삭제 시 가장 오래된 배송지 자동 승격
+- **사용자 격리:** URL에 userId 포함으로 보안 강화
+- **트랜잭션 관리:** @Modifying 쿼리와 적절한 트랜잭션 범위 설정
+
+#### 테스트 결과
+- ✅ 배송지 생성: 첫 번째 배송지 자동 기본 설정
+- ✅ 기본 배송지 전환: PATCH API로 기본 배송지 변경 성공
+- ✅ 배송지 목록: 기본 배송지 우선, 생성일 역순 정렬
+- ✅ 배송지 수정: 전화번호 및 상세주소 수정 성공
+- ✅ 기본 배송지 삭제: 남은 배송지 자동 기본 설정
+- ✅ 단일 배송지 조회: 상세 정보 정상 반환
+
+#### 커밋 정보
+- **커밋 해시:** [추후 업데이트]
+- **커밋 메시지:** feat: UserAddress 도메인 완전 구현 (배송지 CRUD, 기본 배송지 자동 관리)
+- **변경된 파일:** 4개 파일 (신규 1개, 수정 3개)
+- **브랜치:** dev
+
+#### 다음 작업 연계사항
+- **AuthController 구현:** 로그인/로그아웃 인증 시스템 완성
+- **Order 도메인 구현:** User + Product + UserAddress 통합 주문 시스템
+- **Payment 도메인 구현:** Order와 연계된 결제 처리 시스템
+
+---
+
 ### 2024-09-21 - Swagger 어노테이션 미니멀 패턴 리팩토링
 
 **작업 목적:** 
@@ -489,10 +575,10 @@
 | UserController | ✅ | ✅ | ✅ | ✅ |
 | TagController | ✅ | ✅ | ✅ | ✅ |
 | ProductTagController | ✅ | ✅ | ✅ | ✅ |
+| UserAddressController | ✅ | ✅ | ✅ | ✅ |
 | OrderController | ✅ | ❌ | ❌ | ❌ |
 | PaymentController | ✅ | ❌ | ❌ | ❌ |
 | UserProfileController | ✅ | ❌ | ❌ | ❌ |
-| UserAddressController | ✅ | ❌ | ❌ | ❌ |
 
 ### 주요 의존성
 - Spring Boot 3.5.5

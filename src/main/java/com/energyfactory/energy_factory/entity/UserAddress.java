@@ -1,6 +1,10 @@
 package com.energyfactory.energy_factory.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,6 +14,10 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_address")
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserAddress {
 
     @Id
@@ -33,11 +41,12 @@ public class UserAddress {
     @Column(name = "address_line1", nullable = false, columnDefinition = "TEXT NOT NULL COMMENT '기본주소'")
     private String addressLine1;
 
-    @Column(name = "is_default", columnDefinition = "BOOLEAN COMMENT '기본 배송지 여부'")
-    private Boolean isDefault;
-
     @Column(name = "address_line2", columnDefinition = "TEXT COMMENT '상세주소'")
     private String addressLine2;
+
+    @Builder.Default
+    @Column(name = "is_default", columnDefinition = "BOOLEAN DEFAULT FALSE COMMENT '기본 배송지 여부'")
+    private Boolean isDefault = false;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP NOT NULL COMMENT '생성일'")
@@ -47,4 +56,11 @@ public class UserAddress {
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP COMMENT '수정일'")
     private LocalDateTime updatedAt;
 
+    public void setAsDefault() {
+        this.isDefault = true;
+    }
+
+    public void setAsNonDefault() {
+        this.isDefault = false;
+    }
 }

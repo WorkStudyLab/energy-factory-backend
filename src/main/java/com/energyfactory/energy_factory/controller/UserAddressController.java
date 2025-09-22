@@ -1,15 +1,14 @@
 package com.energyfactory.energy_factory.controller;
 
 import com.energyfactory.energy_factory.dto.ApiResponse;
-import com.energyfactory.energy_factory.dto.ErrorResponseDto;
 import com.energyfactory.energy_factory.dto.UserAddressCreateRequestDto;
 import com.energyfactory.energy_factory.dto.UserAddressResponseDto;
-import com.energyfactory.energy_factory.service.UserService;
+import com.energyfactory.energy_factory.service.UserAddressService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,67 +20,80 @@ import java.util.List;
  * 배송지 등록, 조회, 수정, 삭제, 기본 배송지 설정 기능을 제공
  */
 @RestController
-@RequestMapping("/api/users/addresses")
+@RequestMapping("/api/users/{userId}/addresses")
 @Tag(name = "User Address", description = "사용자 배송지 관련 API")
+@RequiredArgsConstructor
 public class UserAddressController {
 
-    private final UserService userService;
-
-    @Autowired
-    public UserAddressController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserAddressService userAddressService;
 
     @GetMapping
-    @Operation(summary = "배송지 목록 조회")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<List<UserAddressResponseDto>>> getAddresses() {
-        // TODO: 서비스 레이어 구현 후 연동
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, List.of()));
+    @Operation(summary = "사용자 배송지 목록 조회")
+    public ResponseEntity<ApiResponse<List<UserAddressResponseDto>>> getUserAddresses(
+            @PathVariable Long userId
+    ) {
+        List<UserAddressResponseDto> addresses = userAddressService.getUserAddresses(userId);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, addresses));
     }
 
     @PostMapping
     @Operation(summary = "배송지 등록")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<UserAddressResponseDto>> createAddress(
+    public ResponseEntity<ApiResponse<UserAddressResponseDto>> createAddress(
+            @PathVariable Long userId,
             @Valid @RequestBody UserAddressCreateRequestDto request
     ) {
-        // TODO: 서비스 레이어 구현 후 연동
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, null));
+        UserAddressResponseDto address = userAddressService.createAddress(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(ResultCode.SUCCESS_POST, address));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{addressId}")
     @Operation(summary = "배송지 상세 조회")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<UserAddressResponseDto>> getAddress(
-            @PathVariable Long id
+    public ResponseEntity<ApiResponse<UserAddressResponseDto>> getAddress(
+            @PathVariable Long userId,
+            @PathVariable Long addressId
     ) {
-        // TODO: 서비스 레이어 구현 후 연동
-        return ResponseEntity.notFound().build();
+        UserAddressResponseDto address = userAddressService.getAddress(userId, addressId);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, address));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{addressId}")
     @Operation(summary = "배송지 수정")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<UserAddressResponseDto>> updateAddress(
-            @PathVariable Long id,
+    public ResponseEntity<ApiResponse<UserAddressResponseDto>> updateAddress(
+            @PathVariable Long userId,
+            @PathVariable Long addressId,
             @Valid @RequestBody UserAddressCreateRequestDto request
     ) {
-        // TODO: 서비스 레이어 구현 후 연동
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
+        UserAddressResponseDto address = userAddressService.updateAddress(userId, addressId, request);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, address));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{addressId}")
     @Operation(summary = "배송지 삭제")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<Void>> deleteAddress(
-            @PathVariable Long id
+    public ResponseEntity<ApiResponse<Void>> deleteAddress(
+            @PathVariable Long userId,
+            @PathVariable Long addressId
     ) {
-        // TODO: 서비스 레이어 구현 후 연동
+        userAddressService.deleteAddress(userId, addressId);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
     }
 
-    @PatchMapping("/{id}/default")
+    @PatchMapping("/{addressId}/default")
     @Operation(summary = "기본 배송지 설정")
-    public ResponseEntity<com.energyfactory.energy_factory.dto.ApiResponse<Void>> setDefaultAddress(
-            @PathVariable Long id
+    public ResponseEntity<ApiResponse<UserAddressResponseDto>> setDefaultAddress(
+            @PathVariable Long userId,
+            @PathVariable Long addressId
     ) {
-        // TODO: 서비스 레이어 구현 후 연동
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
+        UserAddressResponseDto address = userAddressService.setDefaultAddress(userId, addressId);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, address));
+    }
+
+    @GetMapping("/default")
+    @Operation(summary = "기본 배송지 조회")
+    public ResponseEntity<ApiResponse<UserAddressResponseDto>> getDefaultAddress(
+            @PathVariable Long userId
+    ) {
+        UserAddressResponseDto address = userAddressService.getDefaultAddress(userId);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, address));
     }
 }
