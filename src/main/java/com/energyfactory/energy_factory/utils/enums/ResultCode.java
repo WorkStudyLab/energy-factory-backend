@@ -10,9 +10,17 @@ public enum ResultCode {
 
     SUCCESS(HttpStatus.OK, "20000000", "요청이 성공적으로 처리되었습니다."),
     SUCCESS_POST(HttpStatus.CREATED,"20000001","회원 가입 성공"),
+    LOGIN_SUCCESS(HttpStatus.OK, "20000002", "로그인이 성공적으로 처리되었습니다."),
+    TOKEN_REFRESH_SUCCESS(HttpStatus.OK, "20000003", "토큰이 성공적으로 갱신되었습니다."),
+    
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "40000001", "인증 정보가 유효하지 않습니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "40000002", "요청한 리소스를 찾을 수 없습니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "40000009", "이미 사용 중인 이메일입니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "40100000", "로그인에 실패했습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "40100003", "유효하지 않은 리프레시 토큰입니다."),
+    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "40100004", "만료된 리프레시 토큰입니다."),
+    INVALID_TOKEN_TYPE(HttpStatus.BAD_REQUEST, "40100005", "유효하지 않은 토큰 타입입니다."),
+    REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "40100006", "리프레시 토큰이 필요합니다."),
 
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "40100001", "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "40100002", "사용자를 찾을 수 없습니다."),
