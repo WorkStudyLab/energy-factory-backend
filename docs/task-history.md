@@ -30,19 +30,21 @@
 - ✅ **Product 도메인 완전 구현** (엔티티, 레포지토리, 서비스, 컨트롤러)
 - ✅ **User 도메인 완전 구현** (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
 - ✅ **Tags 도메인 완전 구현** (CRUD, 검색, 인기 태그, 중복 검증)
+- ✅ **ProductTag 도메인 완전 구현** (상품-태그 연결, 태그 기반 상품 검색)
 
 ### 현재 구현 상태
 - **ProductController:** ✅ 완성 (조회, 검색, 필터링 API)
 - **UserController:** ✅ 완성 (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
 - **TagController:** ✅ 완성 (CRUD, 검색, 인기 태그 API)
+- **ProductTagController:** ✅ 완성 (상품-태그 연결, 태그 기반 상품 검색 API)
 - **OrderController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **PaymentController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **기타 컨트롤러:** API 스펙 정의만, 비즈니스 로직 미구현
 
 ### 다음 작업 예정
-1. **Tags 도메인 구현** ✅ 완료 (상품 태그 기능)
+1. **ProductTag 도메인 구현** ✅ 완료 (상품-태그 연결)
 2. **UserAddress 도메인 구현** (배송지 관리)
-3. **ProductTag 도메인 구현** (상품-태그 연결)
+3. **AuthController 도메인 구현** (로그인/로그아웃/토큰 관리)
 4. **Order, Payment 도메인 구현** (주문/결제 시스템)
 
 ---
@@ -304,6 +306,102 @@
 
 ---
 
+### 2025-09-22 - ProductTag 도메인 완전 구현
+
+**작업 목적:** 
+- 상품과 태그 간 다대다 관계 연결로 상품 검색 기능 강화
+- 태그 기반 상품 필터링 및 분류 시스템 구축
+- Product, Tag 도메인 간의 통합 완성
+
+**담당자:** AI Assistant  
+**소요시간:** 약 1시간
+
+#### 작업 내용
+1. **ProductTag 엔티티 개선**
+   - Lombok 어노테이션 적용으로 코드 간소화
+   - JPA Auditing 추가 (created_at 자동 관리)
+   - 유니크 제약조건 설정 (product_id, tag_id 조합)
+   - 연관관계 매핑 완성
+
+2. **ProductTagRepository 구현**
+   - JpaRepository 확장으로 기본 CRUD 제공
+   - 15개 전용 쿼리 메서드 구현
+   - 복합 조건 검색: 모든 태그 조건(AND), 일부 태그 조건(OR)
+   - JOIN FETCH를 활용한 N+1 문제 해결
+   - 중복 검증 및 연관관계 기반 삭제 메서드
+
+3. **ProductTagService 비즈니스 로직 구현**
+   - 상품-태그 연결 관리 (단일/일괄 추가, 제거)
+   - 태그 기반 상품 조회 (페이징, 필터링)
+   - 복합 태그 검색 (AND/OR 조건)
+   - 중복 검증 및 에러 처리
+   - DTO 변환 로직 구현
+
+4. **ProductTagController API 확장**
+   - 기존 1개 → 8개 API 엔드포인트로 확장
+   - 상품-태그 CRUD 관리 API
+   - 태그 기반 상품 검색 API (단일/복합 조건)
+   - RESTful 설계 패턴 적용
+
+5. **DTO 및 에러 처리 보완**
+   - ProductTagBulkRequestDto 생성 (일괄 처리용)
+   - 기존 ResultCode 활용한 일관된 에러 처리
+   - 페이징 응답 표준화
+
+6. **완전한 API 테스트**
+   - 상품에 태그 추가/제거 모든 기능 검증
+   - 태그 기반 상품 검색 기능 테스트
+   - 페이징 및 에러 처리 확인
+
+#### 주요 변경사항
+**수정된 파일:**
+- `ProductTag.java`: Lombok 어노테이션 및 JPA Auditing 적용 (42줄)
+- `ProductTagController.java`: 1개 → 8개 API 엔드포인트 구현 (108줄)
+- `ProductTagService.java`: TODO → 완전한 비즈니스 로직 구현 (216줄)
+- `CustomUserDetailService.java`: Optional 반환값 처리 수정
+
+**새로 생성된 파일:**
+- `ProductTagRepository.java`: 15개 쿼리 메서드 구현 (35줄)
+- `ProductTagBulkRequestDto.java`: 일괄 태그 추가 요청 DTO
+
+#### 구현된 API 엔드포인트
+- `GET /api/products/{productId}/tags` - 상품의 태그 목록 조회
+- `POST /api/products/{productId}/tags/{tagId}` - 상품에 태그 추가
+- `POST /api/products/{productId}/tags` - 상품에 여러 태그 일괄 추가
+- `DELETE /api/products/{productId}/tags/{tagId}` - 상품에서 태그 제거
+- `DELETE /api/products/{productId}/tags` - 상품의 모든 태그 제거
+- `GET /api/products/by-tag/{tagId}` - 특정 태그가 적용된 상품 목록
+- `GET /api/products/by-tags/all` - 모든 태그 조건 만족 상품 (AND)
+- `GET /api/products/by-tags/any` - 일부 태그 조건 만족 상품 (OR)
+
+#### 기술적 의사결정
+- **N+1 문제 해결:** JOIN FETCH를 활용한 연관관계 최적화
+- **복합 검색 지원:** AND/OR 조건을 지원하는 유연한 태그 검색
+- **일괄 처리 지원:** 여러 태그를 한 번에 처리하는 효율성 확보
+- **RESTful 설계:** 직관적인 URL 구조와 HTTP 메서드 활용
+- **페이징 통합:** 기존 ProductListResponseDto 재사용으로 일관성 유지
+
+#### 테스트 결과
+- ✅ 상품에 태그 추가: POST `/api/products/1/tags/1` 성공 (201 Created)
+- ✅ 상품 태그 목록 조회: 연결된 모든 태그 정보 정상 반환
+- ✅ 여러 태그 일괄 추가: JSON 배열 기반 일괄 처리 성공
+- ✅ 태그별 상품 조회: 페이징과 함께 정상 응답
+- ✅ 태그 제거: 개별/전체 태그 제거 모두 성공
+- ✅ 중복 검증: 동일 상품-태그 조합 추가 시 적절한 에러 응답
+
+#### 커밋 정보
+- **커밋 해시:** [추후 업데이트]
+- **커밋 메시지:** feat: ProductTag 도메인 완전 구현 (상품-태그 연결, 태그 기반 검색, 복합 조건 지원)
+- **변경된 파일:** 6개 파일 (신규 2개, 수정 4개)
+- **브랜치:** dev
+
+#### 다음 작업 연계사항
+- **UserAddress 도메인 구현:** 독립적 배송지 관리 시스템 구현
+- **Product 검색 개선:** 태그 필터 기능을 기존 Product API에 통합
+- **AuthController 구현:** 로그인/로그아웃 인증 시스템 완성
+
+---
+
 ### 2024-09-21 - Swagger 어노테이션 미니멀 패턴 리팩토링
 
 **작업 목적:** 
@@ -390,11 +488,11 @@
 | ProductController | ✅ | ✅ | ✅ | ✅ |
 | UserController | ✅ | ✅ | ✅ | ✅ |
 | TagController | ✅ | ✅ | ✅ | ✅ |
+| ProductTagController | ✅ | ✅ | ✅ | ✅ |
 | OrderController | ✅ | ❌ | ❌ | ❌ |
 | PaymentController | ✅ | ❌ | ❌ | ❌ |
 | UserProfileController | ✅ | ❌ | ❌ | ❌ |
 | UserAddressController | ✅ | ❌ | ❌ | ❌ |
-| ProductTagController | ✅ | ❌ | ❌ | ❌ |
 
 ### 주요 의존성
 - Spring Boot 3.5.5
