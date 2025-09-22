@@ -28,18 +28,21 @@
 - ✅ 관리자 전용 API 제거 (일반 쇼핑몰로 목적 변경)
 - ✅ Swagger 어노테이션 미니멀 패턴 리팩토링
 - ✅ **Product 도메인 완전 구현** (엔티티, 레포지토리, 서비스, 컨트롤러)
+- ✅ **User 도메인 완전 구현** (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
+- ✅ **Tags 도메인 완전 구현** (CRUD, 검색, 인기 태그, 중복 검증)
 
 ### 현재 구현 상태
 - **ProductController:** ✅ 완성 (조회, 검색, 필터링 API)
-- **UserController:** API 스펙 정의만, 비즈니스 로직 미구현
+- **UserController:** ✅ 완성 (회원가입, 조회, 수정, 삭제, 비밀번호 변경)
+- **TagController:** ✅ 완성 (CRUD, 검색, 인기 태그 API)
 - **OrderController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **PaymentController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **기타 컨트롤러:** API 스펙 정의만, 비즈니스 로직 미구현
 
 ### 다음 작업 예정
-1. **User 도메인 구현** (회원가입/로그인 핵심 기능)
-2. **Tags 도메인 구현** (상품 태그 기능)
-3. **UserAddress 도메인 구현** (배송지 관리)
+1. **Tags 도메인 구현** ✅ 완료 (상품 태그 기능)
+2. **UserAddress 도메인 구현** (배송지 관리)
+3. **ProductTag 도메인 구현** (상품-태그 연결)
 4. **Order, Payment 도메인 구현** (주문/결제 시스템)
 
 ---
@@ -201,6 +204,106 @@
 
 ---
 
+### 2025-09-22 - Tags 도메인 완전 구현
+
+**작업 목적:** 
+- 상품 태그 시스템 구현으로 상품 분류 및 검색 기능 강화
+- Product 도메인과의 연결을 위한 기반 구조 마련
+- 독립적 도메인 구현으로 시스템 모듈화 증진
+
+**담당자:** AI Assistant  
+**소요시간:** 약 1시간
+
+#### 작업 내용
+1. **Tag 엔티티 완전 재구현**
+   - JPA Auditing 적용 (created_at, updated_at 자동 관리)
+   - Lombok 어노테이션 적용으로 코드 간소화
+   - 테이블명 변경 ("Tags" → "tags")
+   - ProductTag 연관관계 매핑 준비
+
+2. **TagRepository 구현**
+   - JpaRepository 확장으로 기본 CRUD 제공
+   - 중복 검증 메서드 (existsByName)
+   - 검색 기능 (findByNameContainingIgnoreCase)
+   - 인기 태그 조회 (@Query로 상품 연결 수 기준 정렬)
+   - 이름순 정렬 조회 (findAllByOrderByNameAsc)
+
+3. **TagService 비즈니스 로직 구현**
+   - 태그 생성 (중복 검증 포함)
+   - 태그 조회 (ID/이름 기반)
+   - 태그 목록 조회 (페이징, 검색, 인기 태그)
+   - 태그 수정 (중복 검증 포함)
+   - 태그 삭제
+   - DTO 변환 로직 (TagResponseDto, TagSummaryDto)
+
+4. **TagController API 구현**
+   - TODO 메서드를 실제 서비스 호출로 완전 교체
+   - 7개 API 엔드포인트 구현
+   - 적절한 HTTP 상태 코드 및 에러 처리
+   - Swagger 문서화 (미니멀 패턴 적용)
+
+5. **ResultCode 확장**
+   - TAG_NOT_FOUND, DUPLICATE_TAG_NAME 에러 코드 추가
+   - 태그 도메인 전용 에러 처리 구현
+
+6. **완전한 API 테스트**
+   - 태그 생성/조회/수정/삭제 모든 기능 검증
+   - 중복 검증 및 에러 처리 확인
+   - 검색 기능 (키워드 기반) 테스트
+   - 페이징 및 정렬 기능 확인
+
+#### 주요 변경사항
+**수정된 파일:**
+- `Tag.java`: Lombok 어노테이션 및 JPA Auditing 적용 (29줄)
+- `TagRepository.java`: 5개 쿼리 메서드 구현 (15줄)
+- `TagService.java`: 완전한 비즈니스 로직 구현 (175줄)
+- `TagController.java`: TODO에서 실제 구현으로 완전 교체 (96줄)
+- `ResultCode.java`: 태그 도메인 에러 코드 2개 추가
+
+**새로 생성된 파일:**
+- `TagCreateRequestDto.java`: 태그 생성 요청 DTO
+- `TagUpdateRequestDto.java`: 태그 수정 요청 DTO
+- `TagResponseDto.java`: 태그 응답 DTO
+- `TagListResponseDto.java`: 태그 목록 응답 DTO (PageInfo 포함)
+
+#### 구현된 API 엔드포인트
+- `POST /api/tags` - 태그 생성 (중복 검증)
+- `GET /api/tags` - 태그 목록 조회 (페이징, 검색 지원)
+- `GET /api/tags/{id}` - 태그 상세 조회
+- `GET /api/tags/name/{name}` - 태그명으로 조회
+- `GET /api/tags/popular` - 인기 태그 조회
+- `PUT /api/tags/{id}` - 태그 수정 (중복 검증)
+- `DELETE /api/tags/{id}` - 태그 삭제
+
+#### 기술적 의사결정
+- **JPA Auditing 활용:** 생성/수정 시간 자동 관리로 데이터 추적성 확보
+- **Lombok 적용:** 보일러플레이트 코드 제거로 가독성 및 유지보수성 향상
+- **DTO 분리:** 목록용(TagSummaryDto)과 상세용(TagResponseDto) 분리로 성능 최적화
+- **복합 검색:** 키워드 검색과 일반 목록 조회를 하나의 엔드포인트에서 처리
+- **인기 태그 기능:** ProductTag 연관관계를 활용한 태그별 상품 수 집계
+
+#### 테스트 결과
+- ✅ 태그 생성: "고단백", "다이어트" 태그 생성 성공
+- ✅ 중복 검증: 동일 태그명 생성 시 409 Conflict 응답
+- ✅ 태그 목록: 페이징 정보와 함께 정상 조회
+- ✅ 태그 검색: 키워드 "단백" 검색으로 "고단백" 태그 조회 성공
+- ✅ 태그 수정: "고단백" → "고단백질" 수정 성공
+- ✅ 태그 삭제: ID 3번 태그 삭제 후 목록에서 제거 확인
+- ✅ 에러 처리: 존재하지 않는 태그, 중복 태그명 모든 시나리오 검증
+
+#### 커밋 정보
+- **커밋 해시:** [추후 업데이트]
+- **커밋 메시지:** feat: Tags 도메인 완전 구현 (CRUD, 검색, 인기 태그, JPA Auditing)
+- **변경된 파일:** 9개 파일 (신규 4개, 수정 5개)
+- **브랜치:** dev
+
+#### 다음 작업 연계사항
+- **ProductTag 도메인 구현:** Tag와 Product 간 다대다 관계 구현
+- **Product 검색 개선:** 태그 기반 상품 필터링 기능 추가
+- **UserAddress 도메인 구현:** 독립적 도메인으로 다음 우선순위
+
+---
+
 ### 2024-09-21 - Swagger 어노테이션 미니멀 패턴 리팩토링
 
 **작업 목적:** 
@@ -284,11 +387,11 @@
 ### 컨트롤러별 구현 상태
 | 컨트롤러 | API 스펙 | 서비스 로직 | 엔티티 | 테스트 |
 |---------|---------|------------|--------|--------|
+| ProductController | ✅ | ✅ | ✅ | ✅ |
+| UserController | ✅ | ✅ | ✅ | ✅ |
+| TagController | ✅ | ✅ | ✅ | ✅ |
 | OrderController | ✅ | ❌ | ❌ | ❌ |
 | PaymentController | ✅ | ❌ | ❌ | ❌ |
-| ProductController | ✅ | ❌ | ❌ | ❌ |
-| TagController | ✅ | ❌ | ❌ | ❌ |
-| UserController | ✅ | ❌ | ❌ | ❌ |
 | UserProfileController | ✅ | ❌ | ❌ | ❌ |
 | UserAddressController | ✅ | ❌ | ❌ | ❌ |
 | ProductTagController | ✅ | ❌ | ❌ | ❌ |

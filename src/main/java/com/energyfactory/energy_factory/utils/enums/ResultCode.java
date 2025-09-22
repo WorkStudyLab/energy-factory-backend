@@ -27,6 +27,9 @@ public enum ResultCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "40100002", "사용자를 찾을 수 없습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "40100003", "현재 비밀번호가 올바르지 않습니다."),
 
+    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "40200001", "태그를 찾을 수 없습니다."),
+    DUPLICATE_TAG_NAME(HttpStatus.CONFLICT, "40200002", "이미 사용 중인 태그명입니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "50000000", "서버에 오류가 발생했습니다.");
 
     private final HttpStatus status;
