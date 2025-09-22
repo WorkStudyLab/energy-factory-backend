@@ -149,7 +149,7 @@ public class ProductService {
                 .brand(product.getBrand())
                 .weight(product.getWeight())
                 .description(product.getDescription())
-                .stock(product.getStock())
+                .stock(product.getStockQuantity())
                 .status(product.getStatus())
                 .storage(product.getStorage())
                 .weightUnit(product.getWeightUnit())
@@ -171,7 +171,7 @@ public class ProductService {
                 .brand(product.getBrand())
                 .weight(product.getWeight())
                 .weightUnit(product.getWeightUnit())
-                .stock(product.getStock())
+                .stock(product.getStockQuantity())
                 .status(product.getStatus())
                 .build();
     }

@@ -50,7 +50,7 @@ public class Product {
     private String description;
 
     @Column(name = "stock", nullable = false, columnDefinition = "BIGINT NOT NULL COMMENT '재고'")
-    private Long stock;
+    private Long stockQuantity;
 
     @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(50) NOT NULL COMMENT '판매 상태'")
     private String status;
@@ -78,4 +78,22 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    // 재고 차감
+    public void decreaseStock(Integer quantity) {
+        if (this.stockQuantity < quantity) {
+            throw new IllegalStateException("재고가 부족합니다. 현재 재고: " + this.stockQuantity);
+        }
+        this.stockQuantity -= quantity;
+    }
+
+    // 재고 증가 (취소 시 사용)
+    public void increaseStock(Integer quantity) {
+        this.stockQuantity += quantity;
+    }
+
+    // 재고 확인
+    public boolean hasStock(Integer quantity) {
+        return this.stockQuantity >= quantity;
+    }
 }

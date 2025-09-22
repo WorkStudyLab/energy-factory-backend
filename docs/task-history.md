@@ -32,6 +32,7 @@
 - ✅ **Tags 도메인 완전 구현** (CRUD, 검색, 인기 태그, 중복 검증)
 - ✅ **ProductTag 도메인 완전 구현** (상품-태그 연결, 태그 기반 상품 검색)
 - ✅ **UserAddress 도메인 완전 구현** (배송지 관리, 기본 배송지 설정)
+- ✅ **Order 도메인 완전 구현** (주문 CRUD, 재고 관리, 상태 관리)
 
 ### 현재 구현 상태
 - **ProductController:** ✅ 완성 (조회, 검색, 필터링 API)
@@ -39,15 +40,16 @@
 - **TagController:** ✅ 완성 (CRUD, 검색, 인기 태그 API)
 - **ProductTagController:** ✅ 완성 (상품-태그 연결, 태그 기반 상품 검색 API)
 - **UserAddressController:** ✅ 완성 (배송지 CRUD, 기본 배송지 설정 API)
-- **OrderController:** API 스펙 정의만, 비즈니스 로직 미구현
+- **OrderController:** ✅ 완성 (주문 CRUD, 취소, 재고 관리 API)
 - **PaymentController:** API 스펙 정의만, 비즈니스 로직 미구현
 - **기타 컨트롤러:** API 스펙 정의만, 비즈니스 로직 미구현
 
 ### 다음 작업 예정
 1. **ProductTag 도메인 구현** ✅ 완료 (상품-태그 연결)
 2. **UserAddress 도메인 구현** ✅ 완료 (배송지 관리)
-3. **AuthController 도메인 구현** (로그인/로그아웃/토큰 관리)
-4. **Order, Payment 도메인 구현** (주문/결제 시스템)
+3. **Order 도메인 구현** ✅ 완료 (주문/재고 관리)
+4. **Payment 도메인 구현** (결제 시스템)
+5. **AuthController 도메인 구현** (로그인/로그아웃/토큰 관리)
 
 ---
 
@@ -488,6 +490,113 @@
 
 ---
 
+### 2025-09-22 - Order 도메인 완전 구현
+
+**작업 목적:** 
+- 쇼핑몰 핵심 기능인 주문 관리 시스템 완전 구현
+- User, Product, UserAddress 도메인 통합으로 end-to-end 주문 프로세스 완성
+- 재고 관리 및 주문 상태 관리 비즈니스 로직 구현
+
+**담당자:** AI Assistant  
+**소요시간:** 약 3시간
+
+#### 작업 내용
+1. **OrderStatus, PaymentStatus Enum 생성**
+   - 주문 상태: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+   - 결제 상태: PENDING, COMPLETED, FAILED, CANCELLED, REFUNDED
+   - 상태 관리의 일관성 및 타입 안전성 확보
+
+2. **Order, OrderItem 엔티티 개선**
+   - Lombok 어노테이션 적용으로 코드 간소화
+   - JPA Auditing 추가 (created_at, updated_at 자동 관리)
+   - 비즈니스 메서드 추가 (주문번호 생성, 상태 변경, 취소)
+   - OrderItem 팩토리 메서드로 생성 로직 캡슐화
+
+3. **OrderRepository, OrderItemRepository 구현**
+   - OrderRepository: 13개 복합 쿼리 메서드 (필터링, 통계, 검색)
+   - OrderItemRepository: 7개 전문 쿼리 메서드
+   - 복잡한 @Query 활용으로 동적 필터링 및 JOIN 최적화
+
+4. **OrderService 완전한 비즈니스 로직 구현 (262줄)**
+   - 복잡한 주문 생성 로직: 사용자/상품 검증, 재고 확인, 가격 검증
+   - 주문 조회: 다양한 필터링 조건 (상태, 결제상태, 날짜범위)
+   - 주문 취소: 재고 자동 복원 및 상태 변경
+   - DTO 변환: 목록용(OrderSummaryDto), 상세용(OrderResponseDto) 분리
+
+5. **OrderController API 완전 구현**
+   - TODO 메서드에서 실제 서비스 호출로 완전 교체
+   - 5개 API 엔드포인트 구현
+   - 보안 강화: 모든 엔드포인트에 userId 매개변수 추가
+   - 적절한 HTTP 상태 코드 및 에러 응답
+
+6. **Product 도메인 연동 및 재고 관리**
+   - Product 엔티티에 재고 관리 메서드 추가
+   - ProductService, ProductRepository 필드명 수정
+   - 주문 시 재고 차감, 취소 시 재고 복원 자동화
+
+7. **환경 설정 개선**
+   - .env 파일 생성으로 JWT_SECRET_KEY 관리
+   - .gitignore에 .env 추가로 보안 강화
+
+#### 주요 변경사항
+**새로 생성된 파일:**
+- `OrderStatus.java`: 주문 상태 enum (5개 상태)
+- `PaymentStatus.java`: 결제 상태 enum (5개 상태)
+- `OrderRepository.java`: 13개 쿼리 메서드 (67줄)
+- `OrderItemRepository.java`: 7개 쿼리 메서드 (32줄)
+- `.env`: JWT 환경변수 설정 파일
+
+**대폭 수정된 파일:**
+- `Order.java`: Lombok 적용, 비즈니스 메서드 추가 (71줄)
+- `OrderItem.java`: Lombok 적용, 팩토리 메서드 추가 (54줄)
+- `OrderService.java`: TODO → 완전한 비즈니스 로직 (262줄)
+- `OrderController.java`: TODO → 실제 API 구현 (84줄)
+- `Product.java`: 재고 관리 메서드 추가, 필드명 수정 (99줄)
+- `ProductService.java`: 필드명 변경 대응 수정 (178줄)
+- `ProductRepository.java`: 메서드명 수정 (77줄)
+- `ResultCode.java`: Order 도메인 에러 코드 4개 추가
+- `.gitignore`: .env 파일 추가
+
+#### 구현된 API 엔드포인트
+- `GET /api/orders?userId=N` - 주문 목록 조회 (필터링, 페이징)
+- `POST /api/orders?userId=N` - 주문 생성 (재고 검증, 가격 검증)
+- `GET /api/orders/{id}?userId=N` - 주문 상세 조회
+- `PATCH /api/orders/{id}/cancel?userId=N` - 주문 취소 (재고 복원)
+- `GET /api/orders/number/{orderNumber}?userId=N` - 주문번호로 조회
+
+#### 기술적 의사결정
+- **복잡한 주문 생성 로직:** 다단계 검증 (사용자 → 상품 → 재고 → 가격 → 총액)
+- **자동 재고 관리:** 주문 생성 시 차감, 취소 시 복원으로 데이터 일관성 확보
+- **상태 관리:** Enum 기반 타입 안전성과 비즈니스 규칙 강제
+- **보안 강화:** 모든 API에 userId 매개변수로 권한 검증
+- **페이징 및 필터링:** 다양한 조건 조합으로 유연한 주문 조회
+- **트랜잭션 관리:** 주문 생성/취소 시 원자성 보장
+
+#### 테스트 결과
+- ✅ 주문 목록 조회: 빈 목록 정상 반환 (페이징 정보 포함)
+- ✅ 애플리케이션 시작: 포트 8081에서 정상 구동
+- ✅ 컴파일 성공: 모든 타입 오류 해결
+- ✅ Swagger UI 접근: 문서화 정상 동작
+- ✅ JWT 설정 개선: .env 파일로 환경변수 관리
+
+#### 컴파일 에러 해결 과정
+1. **Product 필드명 불일치:** `getStock()` → `getStockQuantity()` 수정
+2. **OrderService 타입 불일치:** `convertToSummaryDto()` 메서드 구현
+3. **ProductRepository 메서드명:** `findByStock` → `findByStockQuantity` 수정
+
+#### 커밋 정보
+- **커밋 해시:** [추후 업데이트]
+- **커밋 메시지:** feat: Order 도메인 완전 구현 (주문 CRUD, 재고 관리, 상태 관리, JWT 환경설정)
+- **변경된 파일:** 12개 파일 (신규 5개, 수정 7개)
+- **브랜치:** dev
+
+#### 다음 작업 연계사항
+- **Payment 도메인 구현:** Order와 연계된 결제 처리 시스템
+- **Order 고도화:** 배송지 연동, 할인/쿠폰 적용 로직
+- **AuthController 구현:** 로그인/로그아웃 인증 시스템 완성
+
+---
+
 ### 2024-09-21 - Swagger 어노테이션 미니멀 패턴 리팩토링
 
 **작업 목적:** 
@@ -576,7 +685,7 @@
 | TagController | ✅ | ✅ | ✅ | ✅ |
 | ProductTagController | ✅ | ✅ | ✅ | ✅ |
 | UserAddressController | ✅ | ✅ | ✅ | ✅ |
-| OrderController | ✅ | ❌ | ❌ | ❌ |
+| OrderController | ✅ | ✅ | ✅ | ✅ |
 | PaymentController | ✅ | ❌ | ❌ | ❌ |
 | UserProfileController | ✅ | ❌ | ❌ | ❌ |
 

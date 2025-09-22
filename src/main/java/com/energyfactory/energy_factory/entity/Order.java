@@ -1,17 +1,28 @@
 package com.energyfactory.energy_factory.entity;
 
+import com.energyfactory.energy_factory.utils.enums.OrderStatus;
+import com.energyfactory.energy_factory.utils.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "orders")
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -29,11 +40,15 @@ public class Order {
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) NOT NULL COMMENT '주문 총 합계'")
     private BigDecimal totalPrice;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(255) NOT NULL COMMENT '주문 상태(배송 상태)'")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "VARCHAR(20) NOT NULL COMMENT '주문 상태(배송 상태)'")
+    private OrderStatus status = OrderStatus.PENDING;
 
-    @Column(name = "payment_status", nullable = false, columnDefinition = "VARCHAR(255) NOT NULL COMMENT '결제 상태(완료,취소,환불)'")
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(name = "payment_status", nullable = false, columnDefinition = "VARCHAR(20) NOT NULL COMMENT '결제 상태(완료,취소,환불)'")
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @Column(name = "recipient_name", nullable = false, columnDefinition = "VARCHAR(255) NOT NULL COMMENT '수령인'")
     private String recipientName;
@@ -58,10 +73,39 @@ public class Order {
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP COMMENT '수정일'")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Payment> payments;
+    private List<Payment> payments = new ArrayList<>();
 
+    // 주문번호 생성 (시간 기반)
+    public static Long generateOrderNumber() {
+        return System.currentTimeMillis();
+    }
+
+    // 주문 상태 변경
+    public void updateStatus(OrderStatus newStatus) {
+        this.status = newStatus;
+    }
+
+    // 결제 상태 변경
+    public void updatePaymentStatus(PaymentStatus newPaymentStatus) {
+        this.paymentStatus = newPaymentStatus;
+    }
+
+    // 주문 취소
+    public void cancel() {
+        this.status = OrderStatus.CANCELLED;
+        this.paymentStatus = PaymentStatus.CANCELLED;
+    }
+
+    // 주문 총액 계산
+    public BigDecimal calculateTotalPrice() {
+        return orderItems.stream()
+                .map(OrderItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

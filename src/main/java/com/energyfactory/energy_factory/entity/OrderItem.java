@@ -1,6 +1,10 @@
 package com.energyfactory.energy_factory.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -11,6 +15,10 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "order_items")
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItem {
 
     @Id
@@ -43,4 +51,21 @@ public class OrderItem {
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP COMMENT '수정일'")
     private LocalDateTime updatedAt;
 
+    // 총액 계산
+    public BigDecimal calculateTotalPrice() {
+        return price.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    // 주문 아이템 생성 팩토리 메서드
+    public static OrderItem of(Order order, Product product, Integer quantity, BigDecimal price) {
+        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(quantity));
+        
+        return OrderItem.builder()
+                .order(order)
+                .product(product)
+                .quantity(quantity)
+                .price(price)
+                .totalPrice(totalPrice)
+                .build();
+    }
 }

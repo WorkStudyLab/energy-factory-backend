@@ -73,5 +73,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /**
      * 재고가 있는 상품만 조회
      */
-    Page<Product> findByStockGreaterThan(Long minStock, Pageable pageable);
+    Page<Product> findByStockQuantityGreaterThan(Long minStock, Pageable pageable);
 }
