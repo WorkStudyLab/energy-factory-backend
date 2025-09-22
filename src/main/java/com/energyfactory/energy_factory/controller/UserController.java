@@ -3,13 +3,15 @@ package com.energyfactory.energy_factory.controller;
 import com.energyfactory.energy_factory.dto.ApiResponse;
 import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
+import com.energyfactory.energy_factory.dto.UserResponseDto;
+import com.energyfactory.energy_factory.dto.UserUpdateRequestDto;
 import com.energyfactory.energy_factory.service.UserService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,20 +19,16 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 /**
- * 사용자 인증 컨트롤러
- * 회원가입, 로그인 등 사용자 인증 관련 기능을 제공
+ * 사용자 관리 컨트롤러
+ * 회원가입, 사용자 정보 조회/수정, 회원 탈퇴 등 사용자 관리 기능을 제공
  */
 @RestController
-@RequestMapping("/api/auth")
-@Tag(name = "User Authentication", description = "사용자 인증 관련 API")
+@RequestMapping("/api/users")
+@Tag(name = "User Management", description = "사용자 관리 관련 API")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입")
@@ -39,6 +37,46 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.of(ResultCode.SUCCESS_POST, userService.signup(signupRequestDto)));
+    }
+    
+    @GetMapping("/{id}")
+    @Operation(summary = "사용자 정보 조회")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUser(@PathVariable Long id) {
+        UserResponseDto user = userService.getUserById(id);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
+    }
+    
+    @GetMapping("/email/{email}")
+    @Operation(summary = "이메일로 사용자 조회")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUserByEmail(@PathVariable String email) {
+        UserResponseDto user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
+    }
+    
+    @PutMapping("/{id}")
+    @Operation(summary = "사용자 정보 수정")
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
+        UserResponseDto updatedUser = userService.updateUser(id, updateRequestDto);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, updatedUser));
+    }
+    
+    @PutMapping("/{id}/password")
+    @Operation(summary = "비밀번호 변경")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @PathVariable Long id,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword) {
+        userService.changePassword(id, currentPassword, newPassword);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
+    }
+    
+    @DeleteMapping("/{id}")
+    @Operation(summary = "회원 탈퇴")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
     }
 
 }

@@ -1,0 +1,176 @@
+
+CREATE TABLE order_items
+(
+  id          BIGINT        NOT NULL COMMENT '주문 상세 ID',
+  order_id    BIGINT        NOT NULL COMMENT '주문 ID',
+  product_id  BIGINT        NOT NULL COMMENT '상품 ID',
+  quantity    INT           NOT NULL COMMENT '주문 수량',
+  price       DECIMAL(10,2) NOT NULL COMMENT '단가',
+  total_price DECIMAL(10,2) NOT NULL COMMENT '상품별  총액',
+  created_at  TIMESTAMP     NULL     COMMENT '생성일',
+  updated_at  TIMESTAMP     NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '주문 상세';
+
+CREATE TABLE orders
+(
+  id             BIGINT        NOT NULL COMMENT '주문 ID',
+  user_id        BIGINT        NOT NULL DEFAULT FK COMMENT '주문자 아이디',
+  order_number   BIGINT        NOT NULL COMMENT '주문번호',
+  total_price    DECIMAL(10,2) NOT NULL COMMENT '주문 총 합계',
+  status         VARCHAR       NOT NULL COMMENT '주문 상태(배송 상태)',
+  payment_status VARCHAR       NOT NULL COMMENT '결제 상태(완료,취소,환불)',
+  recipient_name VARCHAR       NOT NULL COMMENT '수령인',
+  phone_number   VARCHAR       NOT NULL COMMENT '수령인 전화번호',
+  postal_code    VARCHAR       NOT NULL COMMENT '우편번호',
+  address_line1  text          NOT NULL COMMENT '기본주소',
+  address_line2  TEXT          NULL     COMMENT '상세주소',
+  created_at     TIMESTAMP     NULL     COMMENT '생성일',
+  updated_at     TIMESTAMP     NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '주문';
+
+ALTER TABLE orders
+  ADD CONSTRAINT UQ_order_number UNIQUE (order_number);
+
+CREATE TABLE payments
+(
+  id             BIGINT        NOT NULL COMMENT '결제 ID',
+  order_id       BIGINT        NOT NULL COMMENT '주문 ID',
+  payment_method VARCHAR       NOT NULL COMMENT '결제 수단',
+  payment_status VARCHAR       NOT NULL COMMENT '결제 상태(결제 여부,환불)',
+  transaction_id VARCHAR       NULL     COMMENT 'PG사 거래 ID(unique)',
+  amount         DECIMAL(10,2) NOT NULL COMMENT '결제 금액',
+  paid_at        TIMESTAMP     NULL     COMMENT '결제 완료 시각',
+  created_at     TIMESTAMP     NULL     COMMENT '생성일',
+  updated_at     TIMESTAMP     NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '결제';
+
+ALTER TABLE payments
+  ADD CONSTRAINT UQ_transaction_id UNIQUE (transaction_id);
+
+CREATE TABLE product
+(
+  id          BIGINT        NOT NULL COMMENT '상품 고유 ID',
+  name        VARCHAR(255)  NOT NULL COMMENT '상품명',
+  price       DECIMAL(10,2) NOT NULL COMMENT '상품 가격',
+  category    VARCHAR(100)  NOT NULL COMMENT '카테고리(고기,채소,생선 등등)',
+  image_url   TEXT          NULL     COMMENT '이미지 URL',
+  brand       VARCHAR(100)  NULL     COMMENT '브랜드명',
+  weight      DECIMAL(10,2) NULL     COMMENT '판매 중량(숫자만)',
+  description TEXT          NULL     COMMENT '상세 설명',
+  stock       BIGINT        NOT NULL COMMENT '재고',
+  status      VARCHAR(50)   NOT NULL COMMENT '판매 상태',
+  storage     VARCHAR(100)  NULL     COMMENT '보관 방법',
+  weight_unit VARCHAR(10)   NOT NULL COMMENT '중량 단위(g,ml,L 등)',
+  created_at  TIMESTAMP     NULL     COMMENT '등록일',
+  updated_at  TIMESTAMP     NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '상품';
+
+CREATE TABLE product_nutrients
+(
+  id         BIGINT       NOT NULL COMMENT '상품 영양성분 ID',
+  product_id BIGINT       NOT NULL COMMENT '상품 고유 ID',
+  name       VARCHAR(100) NOT NULL COMMENT '영양소 이름(칼로리,탄단지)',
+  value      VARCHAR(50)  NOT NULL COMMENT '영양소 값',
+  unit       VARCHAR(20)  NOT NULL COMMENT '단위(g,kcal) ',
+  created_at TIMESTAMP    NULL     COMMENT '등록일',
+  updated_at TIMESTAMP    NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '상품 영양성분';
+
+CREATE TABLE product_tags
+(
+  id         BIGINT NOT NULL COMMENT '상품 태그ID',
+  product_id BIGINT NOT NULL COMMENT '상품 ID (상품 + 태그 unique 제약 조건 묶기)',
+  tag_id     BIGINT NOT NULL COMMENT '태그 ID',
+  PRIMARY KEY (id)
+) COMMENT '상품 태그';
+
+CREATE TABLE tags
+(
+  id   BIGINT  NOT NULL COMMENT '태그 ID',
+  name VARCHAR NOT NULL COMMENT '태그명(고단백,다이어트,저지방 등등)',
+  PRIMARY KEY (id)
+) COMMENT '태그';
+
+ALTER TABLE tags
+  ADD CONSTRAINT UQ_name UNIQUE (name);
+
+CREATE TABLE user
+(
+  id           BIGINT       NOT NULL COMMENT '아이디',
+  email        VARCHAR(255) NOT NULL COMMENT '이메일',
+  password     VARCHAR(255) NOT NULL COMMENT '비밀번호',
+  name         VARCHAR(100) NOT NULL COMMENT '이름',
+  phone_number VARCHAR(20)  NOT NULL COMMENT '전화번호',
+  provider     VARCHAR(50)  NOT NULL COMMENT '소셜 로그인 제공자',
+  provider_id  VARCHAR(255) NULL     COMMENT '소셜 계정 식별자',
+  role         VARCHAR(50)  NOT NULL COMMENT '권한',
+  created_at   TIMESTAMP    NOT NULL COMMENT '생성일',
+  updated_at   TIMESTAMP    NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '사용자 테이블';
+
+ALTER TABLE user
+  ADD CONSTRAINT UQ_email UNIQUE (email);
+
+ALTER TABLE user
+  ADD CONSTRAINT UQ_phone_number UNIQUE (phone_number);
+
+CREATE TABLE user_address
+(
+  id            BIGINT       NOT NULL COMMENT '배송지 아이디',
+  user_id       BIGINT       NOT NULL COMMENT '사용자 아이디',
+  recipent_name VARCHAR(100) NOT NULL COMMENT '수령인',
+  phone         VARCHAR(20)  NULL     COMMENT '수령인 연락처',
+  postal_code   VARCHAR(10)  NOT NULL COMMENT '우편번호',
+  address_line1 text         NOT NULL COMMENT '기본주소',
+  is_default    BOOLEAN      NULL     COMMENT '기본 배송지 여부',
+  address_line2 TEXT         NULL     COMMENT '상세주소',
+  created_at    TIMESTAMP    NULL     COMMENT '생성일',
+  updated_at    TIMESTAMP    NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '사용자 배송지';
+
+ALTER TABLE order_items
+  ADD CONSTRAINT FK_orders_TO_order_items
+    FOREIGN KEY (order_id)
+    REFERENCES orders (id);
+
+ALTER TABLE order_items
+  ADD CONSTRAINT FK_product_TO_order_items
+    FOREIGN KEY (product_id)
+    REFERENCES product (id);
+
+ALTER TABLE orders
+  ADD CONSTRAINT FK_user_TO_orders
+    FOREIGN KEY (user_id)
+    REFERENCES user (id);
+
+ALTER TABLE payments
+  ADD CONSTRAINT FK_orders_TO_payments
+    FOREIGN KEY (order_id)
+    REFERENCES orders (id);
+
+ALTER TABLE product_nutrients
+  ADD CONSTRAINT FK_product_TO_product_nutrients
+    FOREIGN KEY (product_id)
+    REFERENCES product (id);
+
+ALTER TABLE user_address
+  ADD CONSTRAINT FK_user_TO_user_address
+    FOREIGN KEY (user_id)
+    REFERENCES user (id);
+
+ALTER TABLE product_tags
+  ADD CONSTRAINT FK_product_TO_product_tags
+    FOREIGN KEY (product_id)
+    REFERENCES product (id);
+
+ALTER TABLE product_tags
+  ADD CONSTRAINT FK_tags_TO_product_tags
+    FOREIGN KEY (tag_id)
+    REFERENCES tags (id);

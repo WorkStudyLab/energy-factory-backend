@@ -12,6 +12,11 @@ import lombok.Setter;
 @Schema(description = "사용자 정보 수정 요청 DTO")
 public class UserUpdateRequestDto {
 
+    @NotBlank(message = "이메일은 필수입니다")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@(.+)$", message = "이메일 형식이 올바르지 않습니다")
+    @Schema(description = "이메일", example = "user@example.com", required = true)
+    private String email;
+
     @NotBlank(message = "이름은 필수입니다")
     @Size(max = 100, message = "이름은 100자 이하여야 합니다")
     @Schema(description = "이름", example = "홍길동", required = true)
