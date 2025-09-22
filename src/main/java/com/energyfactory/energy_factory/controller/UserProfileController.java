@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 사용자 프로필 관리 컨트롤러
+ * 사용자 프로필 조회 및 수정 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User Profile", description = "사용자 프로필 관련 API")

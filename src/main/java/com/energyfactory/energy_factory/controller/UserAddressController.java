@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 사용자 배송지 관리 컨트롤러
+ * 배송지 등록, 조회, 수정, 삭제, 기본 배송지 설정 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/users/addresses")
 @Tag(name = "User Address", description = "사용자 배송지 관련 API")

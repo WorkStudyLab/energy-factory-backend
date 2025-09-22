@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 상품-태그 연관 관리 컨트롤러
+ * 특정 상품에 할당된 태그 목록 조회 기능을 제공
+ */
 @RestController
 @RequestMapping("/api/products")
 @Tag(name = "Product Tag", description = "상품-태그 관리 API")
