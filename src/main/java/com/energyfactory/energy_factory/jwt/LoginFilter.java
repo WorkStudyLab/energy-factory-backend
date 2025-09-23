@@ -24,7 +24,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    
+
     public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -61,15 +61,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             // Redis에 Refresh Token 저장
             refreshTokenService.saveRefreshToken(username, refreshToken);
 
-            // 응답 생성 (클라이언트에게는 토큰 ID만 전달하거나, 실제 토큰 전달)
+            // 응답 생성
             LoginResponseDto loginResponse = LoginResponseDto.builder()
                     .accessToken(accessToken)
-                    .refreshToken(refreshToken) // 실제 토큰을 전달 (또는 토큰 ID만 전달할 수도 있음)
+                    .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .build();
 
             writeJsonResponse(response, ApiResponse.of(ResultCode.LOGIN_SUCCESS, loginResponse));
-            
+
         } catch (Exception e) {
             unsuccessfulAuthentication(request, response, null);
         }
@@ -88,11 +88,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private void writeJsonResponse(HttpServletResponse response, ApiResponse<?> apiResponse) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        
+
         if (apiResponse.getStatus() != 200) {
             response.setStatus(apiResponse.getStatus());
         }
-        
+
         ObjectMapper mapper = new ObjectMapper();
         response.getWriter().write(mapper.writeValueAsString(apiResponse));
     }
