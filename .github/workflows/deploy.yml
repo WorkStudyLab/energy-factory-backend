@@ -62,7 +62,7 @@ jobs:
           
           # 프로젝트 빌드
           echo "🔨 Building project..."
-          ./gradlew clean build -x test
+          ./gradlew clean build -x test --max-workers=1 -Dorg.gradle.jvmargs="-Xmx512m -XX:MaxMetaspaceSize=256m"
           
           # 새 JAR 파일 복사
           cp build/libs/energy-factory-0.0.1-SNAPSHOT.jar ./
