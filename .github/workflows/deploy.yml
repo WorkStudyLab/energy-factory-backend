@@ -27,9 +27,7 @@ jobs:
       run: ./gradlew build
       
     - name: Run tests
-      run: ./gradlew test -Dspring.profiles.active=test
-      env:
-        SPRING_PROFILES_ACTIVE: test
+      run: ./gradlew test
 
   deploy:
     needs: test
