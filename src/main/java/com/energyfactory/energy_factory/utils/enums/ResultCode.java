@@ -36,6 +36,9 @@ public enum ResultCode {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "40300003", "해당 주문에 접근할 권한이 없습니다."),
     CANNOT_CANCEL_ORDER(HttpStatus.BAD_REQUEST, "40300004", "취소할 수 없는 주문 상태입니다."),
 
+    // Payment 도메인 에러 코드
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "40400001", "잘못된 요청입니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "50000000", "서버에 오류가 발생했습니다.");
 
     private final HttpStatus status;
