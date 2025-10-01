@@ -1,7 +1,7 @@
 # CI/CD 구축 현재 상태
 
-**최종 업데이트**: 2025-09-30 15:32 UTC  
-**상태**: ✅ **완료** - 완전한 CI/CD 파이프라인 구축 성공
+**최종 업데이트**: 2025-10-01 13:20 UTC  
+**상태**: ✅ **완료** - CORS 설정 및 배포 문제 해결 완료
 
 ---
 
@@ -37,7 +37,8 @@
 - **결과**: 외부 DB 의존성 없는 완전한 테스트 환경
 
 ### 4. ✅ EC2 시스템 리소스 최적화
-- **스왑 메모리**: 1GB 추가 (총 메모리 ~2GB)
+- **EBS 볼륨**: 8GB → 16GB 확장
+- **스왑 메모리**: 1GB → 2GB 확장 (총 메모리 ~3GB)
 - **JVM 최적화**: `-Xmx512m -XX:MaxMetaspaceSize=256m`
 - **Gradle 최적화**: `--max-workers=1` 병렬 작업 제한
 - **결과**: 안정적인 빌드 환경 확보
@@ -49,9 +50,16 @@
 - **모니터링**: 배포 상태 자동 확인 및 로그 출력
 
 ### 6. ✅ 환경변수 및 설정 관리
-- **systemd 환경변수**: 서비스 파일에 직접 설정
+- **systemd 환경변수**: 서비스 파일에 직접 설정 (DB_USERNAME 수정)
 - **프로파일 분리**: dev(운영) / test(테스트) 환경 분리
+- **JWT 설정**: application-dev.yml에 refresh-token-expiration 추가
 - **보안**: 민감정보 GitHub Secrets로 관리
+
+### 7. ✅ CORS 설정 및 프론트엔드 연결
+- **CORS Origin**: S3 프론트엔드 도메인, localhost:3000, localhost:5173 허용
+- **HTTP 메서드**: GET, POST, PUT, DELETE, OPTIONS 허용
+- **헤더**: 모든 헤더 허용, Credentials 포함
+- **결과**: 프론트엔드와 백엔드 간 정상 통신 확보
 
 ---
 
@@ -103,21 +111,26 @@ jobs:
 
 ### EC2 시스템 상태
 ```bash
-# 메모리 현황
-Mem: 957Mi total, 235Mi free, 379Mi used
-Swap: 1.0Gi total, 0B used, 1.0Gi available
+# 메모리 현황 (최적화 후)
+Mem: 957Mi total, 67Mi free, 746Mi used
+Swap: 2.0Gi total, 0B used, 2.0Gi available
 
 # 서비스 상태
 ● energy-factory.service - Energy Factory Spring Boot Application
-     Active: active (running)
-     Memory: 80.6M (peak: 80.9M)
+     Active: active (running) since Wed 2025-10-01 13:09:54 UTC
+     Memory: 359.1M (peak: 368.2M)
+     Main PID: 21337 (java)
+
+# 포트 리스닝
+tcp   LISTEN 0      100     *:8080     *:*    users:(("java",pid=21337,fd=19))
 ```
 
 ### 최신 배포 정보
-- **Git HEAD**: ed311a8 "fix: systemd 서비스 환경변수 설정 및 메모리 최적화"
+- **Git HEAD**: c62a735 "fix: application-dev.yml에 누락된 jwt.refresh-token-expiration 설정 추가"
 - **JAR 버전**: energy-factory-0.0.1-SNAPSHOT.jar
-- **배포 시간**: 2025-09-30 15:32 UTC
+- **배포 시간**: 2025-10-01 13:20 UTC
 - **배포 상태**: ✅ 성공
+- **CORS 설정**: ✅ 프론트엔드 연결 성공
 
 ---
 

@@ -28,6 +28,7 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -66,3 +67,6 @@ logging:
     root: INFO
     com.energyfactory.energy_factory: DEBUG
     org.springframework.security: DEBUG
+
+  secret: ${JWT_SECRET_KEY}
+  refresh-token-expiration: 604800
