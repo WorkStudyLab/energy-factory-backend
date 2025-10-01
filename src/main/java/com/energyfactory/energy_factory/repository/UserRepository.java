@@ -31,6 +31,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * 소셜 로그인용 Provider + ProviderId로 사용자 조회
      */
-    Optional<User> findByProviderAndProviderId(String provider, String providerId);
+    Optional<User> findByProviderAndProviderId(com.energyfactory.energy_factory.utils.enums.Provider provider, String providerId);
 
 }

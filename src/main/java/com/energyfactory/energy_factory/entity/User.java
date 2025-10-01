@@ -34,7 +34,7 @@ public class User {
     @Column(nullable = false, columnDefinition = "varchar(100) COMMENT '이름'")
     private String name;
 
-    @Column(name = "phone_number", nullable = false, unique = true, columnDefinition = "varchar(20) COMMENT '전화번호'")
+    @Column(name = "phone_number", unique = true, columnDefinition = "varchar(20) COMMENT '전화번호'")
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)

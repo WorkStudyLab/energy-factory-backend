@@ -9,8 +9,8 @@ spring:
       client:
         registration:
           naver:
-            client-id: bYUxnsY44vphTM7xjIIg
-            client-secret: ZSPcMkuT_z
+            client-id: ${NAVER_CLIENT_ID}    # 환경변수로 관리
+            client-secret: ${NAVER_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             scope: name,email,mobile
@@ -23,24 +23,24 @@ spring:
             user-name-attribute: response
 
   datasource:
-    url: jdbc:mysql://localhost:3306/energy_factory?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: root
-    password: 1234
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # 운영에서는 validate 사용
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true
-    show-sql: true
+        format_sql: false
+    show-sql: false
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
       timeout: 2000ms
       lettuce:
         pool:
@@ -49,12 +49,10 @@ spring:
           min-idle: 0
 
 jwt:
-  secret: myVerySecretJWTKeyForEnergyFactoryApplication123456789
-  refresh-token-expiration: 604800 # 7일 (초 단위)
+  secret: ${JWT_SECRET}
+  refresh-token-expiration: 604800
 
-# OAuth2 리다이렉트 URL 설정
-app:
-  oauth2:
-    redirect-url: http://localhost:8080/oauth2-test.html
-  cookie:
-    secure: false
+logging:
+  level:
+    root: INFO
+    com.energyfactory.energy_factory: INFO
