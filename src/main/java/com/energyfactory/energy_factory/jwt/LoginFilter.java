@@ -2,6 +2,7 @@ package com.energyfactory.energy_factory.jwt;
 
 import com.energyfactory.energy_factory.dto.ApiResponse;
 import com.energyfactory.energy_factory.dto.CustomUserDetails;
+import com.energyfactory.energy_factory.dto.LoginRequestDto;
 import com.energyfactory.energy_factory.dto.LoginResponseDto;
 import com.energyfactory.energy_factory.service.RefreshTokenService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
@@ -24,6 +25,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     
     public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
@@ -34,16 +36,58 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-
-        //클라이언트 요청에서 username, password 추출
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
-
-        //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담음
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
-
-        //token에 담은 검증을 위한 AuthenticationManager로 전달
-        return authenticationManager.authenticate(authToken);
+        
+        try {
+            // JSON만 처리 (form-data 지원 제거)
+            String contentType = request.getContentType();
+            
+            if (contentType == null || !contentType.contains("application/json")) {
+                throw new AuthenticationException("Content-Type must be application/json") {
+                    @Override
+                    public String getMessage() {
+                        return super.getMessage();
+                    }
+                };
+            }
+            
+            // JSON 요청 파싱
+            LoginRequestDto loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
+            String email = loginRequest.getEmail();
+            String password = loginRequest.getPassword();
+            
+            // 이메일과 비밀번호 검증
+            if (email == null || email.trim().isEmpty()) {
+                throw new AuthenticationException("Email is required") {
+                    @Override
+                    public String getMessage() {
+                        return super.getMessage();
+                    }
+                };
+            }
+            
+            if (password == null || password.trim().isEmpty()) {
+                throw new AuthenticationException("Password is required") {
+                    @Override
+                    public String getMessage() {
+                        return super.getMessage();
+                    }
+                };
+            }
+            
+            // Spring Security에서 username으로 처리하지만 실제로는 email
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password, null);
+            
+            // AuthenticationManager로 인증 처리
+            return authenticationManager.authenticate(authToken);
+            
+        } catch (IOException e) {
+            throw new AuthenticationException("Failed to parse authentication request") {
+                @Override
+                public String getMessage() {
+                    return super.getMessage() + ": " + e.getMessage();
+                }
+            };
+        }
     }
 
     //로그인 성공시 실행하는 메서드(jwt 발급)
