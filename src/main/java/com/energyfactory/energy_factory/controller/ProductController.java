@@ -34,7 +34,6 @@ public class ProductController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice,
-            @RequestParam(defaultValue = "created_desc") String sort,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         ProductListResponseDto response = productService.getProducts(

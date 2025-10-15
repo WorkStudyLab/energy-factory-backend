@@ -51,6 +51,12 @@ public class ProductListResponseDto {
         @Schema(description = "판매 상태", example = "AVAILABLE")
         private String status;
 
+        @Schema(description = "평균 별점", example = "4.5")
+        private java.math.BigDecimal averageRating;
+
+        @Schema(description = "리뷰 개수", example = "128")
+        private Long reviewCount;
+
         @Schema(description = "태그 목록", example = "[\"고단백\", \"다이어트\"]")
         private List<String> tags;
     }

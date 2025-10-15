@@ -140,6 +140,24 @@ public class ProductService {
      * Product 엔티티를 ProductResponseDto로 변환
      */
     private ProductResponseDto convertToProductResponseDto(Product product) {
+        // 태그 변환
+        List<ProductResponseDto.TagResponseDto> tags = product.getProductTags().stream()
+                .map(productTag -> ProductResponseDto.TagResponseDto.builder()
+                        .id(productTag.getTag().getId())
+                        .name(productTag.getTag().getName())
+                        .build())
+                .collect(Collectors.toList());
+        
+        // 영양성분 변환
+        List<ProductResponseDto.NutrientResponseDto> nutrients = product.getProductNutrients().stream()
+                .map(nutrient -> ProductResponseDto.NutrientResponseDto.builder()
+                        .id(nutrient.getId())
+                        .name(nutrient.getName())
+                        .value(nutrient.getValue())
+                        .unit(nutrient.getUnit())
+                        .build())
+                .collect(Collectors.toList());
+        
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -153,8 +171,12 @@ public class ProductService {
                 .status(product.getStatus())
                 .storage(product.getStorage())
                 .weightUnit(product.getWeightUnit())
+                .averageRating(product.getAverageRating())
+                .reviewCount(product.getReviewCount())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
+                .tags(tags)
+                .nutrients(nutrients)
                 .build();
     }
 
@@ -162,6 +184,11 @@ public class ProductService {
      * Product 엔티티를 ProductSummaryDto로 변환 (목록용)
      */
     private ProductListResponseDto.ProductSummaryDto convertToProductSummaryDto(Product product) {
+        // 태그명 리스트 추출
+        List<String> tagNames = product.getProductTags().stream()
+                .map(productTag -> productTag.getTag().getName())
+                .collect(Collectors.toList());
+        
         return ProductListResponseDto.ProductSummaryDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -173,6 +200,9 @@ public class ProductService {
                 .weightUnit(product.getWeightUnit())
                 .stock(product.getStockQuantity())
                 .status(product.getStatus())
+                .averageRating(product.getAverageRating())
+                .reviewCount(product.getReviewCount())
+                .tags(tagNames)
                 .build();
     }
 }

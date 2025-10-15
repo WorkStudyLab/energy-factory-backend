@@ -61,6 +61,14 @@ public class Product {
     @Column(name = "weight_unit", nullable = false, columnDefinition = "VARCHAR(10) NOT NULL COMMENT '중량 단위(g,ml,L 등)'")
     private String weightUnit;
 
+    @Column(name = "average_rating", precision = 3, scale = 2, columnDefinition = "DECIMAL(3,2) DEFAULT 0.0 COMMENT '평균 별점 (0.0 ~ 5.0)'")
+    @Builder.Default
+    private BigDecimal averageRating = BigDecimal.ZERO;
+
+    @Column(name = "review_count", columnDefinition = "BIGINT DEFAULT 0 COMMENT '리뷰 개수'")
+    @Builder.Default
+    private Long reviewCount = 0L;
+    
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP NOT NULL COMMENT '등록일'")
     private LocalDateTime createdAt;
@@ -79,6 +87,9 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<Review> reviews = new ArrayList<>();
+
     // 재고 차감
     public void decreaseStock(Integer quantity) {
         if (this.stockQuantity < quantity) {
@@ -95,5 +106,34 @@ public class Product {
     // 재고 확인
     public boolean hasStock(Integer quantity) {
         return this.stockQuantity >= quantity;
+    }
+
+    // 별점 업데이트 (새로운 리뷰가 추가될 때)
+    public void updateRating(BigDecimal newRating) {
+        if (newRating.compareTo(BigDecimal.ZERO) < 0 || newRating.compareTo(new BigDecimal("5.0")) > 0) {
+            throw new IllegalArgumentException("별점은 0.0에서 5.0 사이여야 합니다.");
+        }
+        
+        BigDecimal totalRating = this.averageRating.multiply(new BigDecimal(this.reviewCount));
+        totalRating = totalRating.add(newRating);
+        this.reviewCount += 1;
+        this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    // 별점 재계산 (리뷰 삭제 시)
+    public void removeRating(BigDecimal removedRating) {
+        if (this.reviewCount <= 0) {
+            throw new IllegalStateException("삭제할 리뷰가 없습니다.");
+        }
+        
+        BigDecimal totalRating = this.averageRating.multiply(new BigDecimal(this.reviewCount));
+        totalRating = totalRating.subtract(removedRating);
+        this.reviewCount -= 1;
+        
+        if (this.reviewCount == 0) {
+            this.averageRating = BigDecimal.ZERO;
+        } else {
+            this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 2, BigDecimal.ROUND_HALF_UP);
+        }
     }
 }

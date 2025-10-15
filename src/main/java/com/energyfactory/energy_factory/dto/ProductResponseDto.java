@@ -55,6 +55,12 @@ public class ProductResponseDto {
     @Schema(description = "수정일", example = "2024-01-01T10:00:00")
     private LocalDateTime updatedAt;
 
+    @Schema(description = "평균 별점", example = "4.5")
+    private BigDecimal averageRating;
+
+    @Schema(description = "리뷰 개수", example = "128")
+    private Long reviewCount;
+
     @Schema(description = "태그 목록")
     private List<TagResponseDto> tags;
 
