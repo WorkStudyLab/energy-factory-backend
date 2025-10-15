@@ -74,4 +74,36 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * 재고가 있는 상품만 조회
      */
     Page<Product> findByStockQuantityGreaterThan(Long minStock, Pageable pageable);
+    
+    /**
+     * 통합 검색: 상품명, 태그명, 영양소명 검색
+     * 하나의 키워드로 여러 필드를 동시에 검색
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN p.productTags pt " +
+           "LEFT JOIN pt.tag t " +
+           "LEFT JOIN p.productNutrients pn " +
+           "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(pn.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+    
+    /**
+     * 통합 검색 + 카테고리 필터
+     */
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN p.productTags pt " +
+           "LEFT JOIN pt.tag t " +
+           "LEFT JOIN p.productNutrients pn " +
+           "WHERE (:category IS NULL OR p.category = :category) " +
+           "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(pn.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Product> searchByKeywordAndCategory(
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            Pageable pageable
+    );
 }

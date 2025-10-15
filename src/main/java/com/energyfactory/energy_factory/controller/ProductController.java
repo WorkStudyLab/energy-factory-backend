@@ -75,4 +75,15 @@ public class ProductController {
         ProductListResponseDto response = productService.searchProducts(q, category, pageable);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, response));
     }
+
+    @GetMapping("/unified-search")
+    @Operation(summary = "통합 검색 (상품명, 태그명, 영양소명, 설명)")
+    public ResponseEntity<ApiResponse<ProductListResponseDto>> unifiedSearch(
+            @RequestParam String q,
+            @RequestParam(required = false) String category,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        ProductListResponseDto response = productService.unifiedSearch(q, category, pageable);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, response));
+    }
 }

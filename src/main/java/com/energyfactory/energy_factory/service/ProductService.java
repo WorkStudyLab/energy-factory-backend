@@ -137,6 +137,39 @@ public class ProductService {
     }
 
     /**
+     * 통합 검색: 상품명, 태그명, 영양소명, 설명 검색
+     */
+    public ProductListResponseDto unifiedSearch(String keyword, String category, Pageable pageable) {
+        Page<Product> productPage;
+        
+        if (category != null && !category.trim().isEmpty()) {
+            // 카테고리 + 통합 검색
+            productPage = productRepository.searchByKeywordAndCategory(keyword, category, pageable);
+        } else {
+            // 통합 검색만
+            productPage = productRepository.searchByKeyword(keyword, pageable);
+        }
+        
+        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
+                .map(this::convertToProductSummaryDto)
+                .collect(Collectors.toList());
+        
+        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
+                .currentPage(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .build();
+        
+        return ProductListResponseDto.builder()
+                .products(products)
+                .pageInfo(pageInfo)
+                .build();
+    }
+
+    /**
      * Product 엔티티를 ProductResponseDto로 변환
      */
     private ProductResponseDto convertToProductResponseDto(Product product) {
