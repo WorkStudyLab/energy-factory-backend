@@ -61,7 +61,7 @@ public class Product {
     @Column(name = "weight_unit", nullable = false, columnDefinition = "VARCHAR(10) NOT NULL COMMENT '중량 단위(g,ml,L 등)'")
     private String weightUnit;
 
-    @Column(name = "average_rating", precision = 3, scale = 2, columnDefinition = "DECIMAL(3,2) DEFAULT 0.0 COMMENT '평균 별점 (0.0 ~ 5.0)'")
+    @Column(name = "average_rating", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) DEFAULT 0.0 COMMENT '평균 별점 (0.0 ~ 5.0)'")
     @Builder.Default
     private BigDecimal averageRating = BigDecimal.ZERO;
 
@@ -117,7 +117,7 @@ public class Product {
         BigDecimal totalRating = this.averageRating.multiply(new BigDecimal(this.reviewCount));
         totalRating = totalRating.add(newRating);
         this.reviewCount += 1;
-        this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 2, BigDecimal.ROUND_HALF_UP);
+        this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 1, BigDecimal.ROUND_HALF_UP);
     }
 
     // 별점 재계산 (리뷰 삭제 시)
@@ -133,7 +133,7 @@ public class Product {
         if (this.reviewCount == 0) {
             this.averageRating = BigDecimal.ZERO;
         } else {
-            this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 2, BigDecimal.ROUND_HALF_UP);
+            this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 1, BigDecimal.ROUND_HALF_UP);
         }
     }
 }
