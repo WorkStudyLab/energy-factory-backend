@@ -45,9 +45,6 @@ public class ProductListResponseDto {
         @Schema(description = "중량 단위", example = "g")
         private String weightUnit;
 
-        @Schema(description = "재고 수량", example = "100")
-        private Long stock;
-
         @Schema(description = "판매 상태", example = "AVAILABLE")
         private String status;
 

@@ -49,9 +49,6 @@ public class Product {
     @Column(name = "description", columnDefinition = "TEXT COMMENT '상세 설명'")
     private String description;
 
-    @Column(name = "stock", nullable = false, columnDefinition = "BIGINT NOT NULL COMMENT '재고'")
-    private Long stockQuantity;
-
     @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(50) NOT NULL COMMENT '판매 상태'")
     private String status;
 
@@ -85,6 +82,24 @@ public class Product {
     @Column(name = "score_health", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '전반적 건강 점수 (0.0-5.0)'")
     private BigDecimal scoreHealth;
 
+    // ===== 할인 정보 =====
+    @Column(name = "original_price", precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) COMMENT '할인 전 원가'")
+    private BigDecimal originalPrice;
+
+    @Column(name = "discount_rate", columnDefinition = "INT COMMENT '할인율 (%)'")
+    private Integer discountRate;
+
+    // ===== 배송 정보 =====
+    @Column(name = "shipping_fee", precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) DEFAULT 0 COMMENT '배송비'")
+    @Builder.Default
+    private BigDecimal shippingFee = BigDecimal.ZERO;
+
+    @Column(name = "free_shipping_threshold", precision = 10, scale = 2, columnDefinition = "DECIMAL(10,2) COMMENT '무료배송 기준 금액'")
+    private BigDecimal freeShippingThreshold;
+
+    @Column(name = "estimated_delivery_days", columnDefinition = "VARCHAR(20) COMMENT '예상 배송 기간(예: 1-2일)'")
+    private String estimatedDeliveryDays;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP NOT NULL COMMENT '등록일'")
     private LocalDateTime createdAt;
@@ -106,23 +121,8 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();
 
-    // 재고 차감
-    public void decreaseStock(Integer quantity) {
-        if (this.stockQuantity < quantity) {
-            throw new IllegalStateException("재고가 부족합니다. 현재 재고: " + this.stockQuantity);
-        }
-        this.stockQuantity -= quantity;
-    }
-
-    // 재고 증가 (취소 시 사용)
-    public void increaseStock(Integer quantity) {
-        this.stockQuantity += quantity;
-    }
-
-    // 재고 확인
-    public boolean hasStock(Integer quantity) {
-        return this.stockQuantity >= quantity;
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<ProductVariant> productVariants = new ArrayList<>();
 
     // 별점 업데이트 (새로운 리뷰가 추가될 때)
     public void updateRating(BigDecimal newRating) {

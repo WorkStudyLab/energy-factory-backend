@@ -108,11 +108,12 @@ public class PaymentService {
             Order order = payment.getOrder();
             order.updatePaymentStatus(PaymentStatus.REFUNDED);
             order.updateStatus(OrderStatus.CANCELLED);
-            
+
+            // TODO: Variant 기반 재고 복원으로 변경 필요
             // 재고 복원
-            order.getOrderItems().forEach(orderItem -> {
-                orderItem.getProduct().increaseStock(orderItem.getQuantity());
-            });
+            // order.getOrderItems().forEach(orderItem -> {
+            //     orderItem.getProduct().increaseStock(orderItem.getQuantity());
+            // });
         }
 
         return convertToResponseDto(payment);

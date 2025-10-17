@@ -43,9 +43,6 @@ public class ProductResponseDto {
     @Schema(description = "상품 설명", example = "신선하고 맛있는 한우 등심입니다.")
     private String description;
 
-    @Schema(description = "재고 수량", example = "100")
-    private Long stock;
-
     @Schema(description = "판매 상태", example = "AVAILABLE")
     private String status;
 
@@ -75,6 +72,18 @@ public class ProductResponseDto {
 
     @Schema(description = "피트니스 목표별 점수")
     private GoalScoresDto goalScores;
+
+    @Schema(description = "할인 전 원가", example = "35000.00")
+    private BigDecimal originalPrice;
+
+    @Schema(description = "할인율 (%)", example = "15")
+    private Integer discount;
+
+    @Schema(description = "배송 정보")
+    private ShippingInfoDto shipping;
+
+    @Schema(description = "상품 옵션/변형 목록")
+    private List<ProductVariantDto> variants;
 
     @Getter
     @Builder

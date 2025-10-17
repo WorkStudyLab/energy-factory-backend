@@ -125,6 +125,12 @@ public class ProductService {
         // 이미지 목록 생성: imageUrl을 배열로 변환 (현재는 단일 이미지를 배열에 담음)
         List<String> images = buildImagesList(product.getImageUrl());
 
+        // 배송 정보 생성
+        ShippingInfoDto shipping = buildShippingInfo(product);
+
+        // 상품 변형 리스트 생성
+        List<ProductVariantDto> variants = buildVariants(product);
+
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -135,7 +141,6 @@ public class ProductService {
                 .brand(product.getBrand())
                 .weight(product.getWeight())
                 .description(product.getDescription())
-                .stock(product.getStockQuantity())
                 .status(product.getStatus())
                 .storage(product.getStorage())
                 .weightUnit(product.getWeightUnit())
@@ -147,6 +152,10 @@ public class ProductService {
                 .nutrition(nutrition)
                 .vitaminsAndMinerals(vitaminsAndMinerals)
                 .goalScores(goalScores)
+                .originalPrice(product.getOriginalPrice())
+                .discount(product.getDiscountRate())
+                .shipping(shipping)
+                .variants(variants)
                 .build();
     }
 
@@ -169,7 +178,6 @@ public class ProductService {
                 .brand(product.getBrand())
                 .weight(product.getWeight())
                 .weightUnit(product.getWeightUnit())
-                .stock(product.getStockQuantity())
                 .status(product.getStatus())
                 .averageRating(product.getAverageRating())
                 .reviewCount(product.getReviewCount())
@@ -293,5 +301,50 @@ public class ProductService {
             return List.of();
         }
         return List.of(imageUrl);
+    }
+
+    /**
+     * Product에서 배송 정보 DTO 생성
+     * 배송 정보가 모두 null인 경우 null 반환
+     *
+     * @param product 상품 엔티티
+     * @return 배송 정보 DTO (모든 필드가 null이면 null)
+     */
+    private ShippingInfoDto buildShippingInfo(Product product) {
+        // 배송 정보가 하나라도 있으면 DTO 생성
+        if (product.getShippingFee() != null ||
+            product.getFreeShippingThreshold() != null ||
+            product.getEstimatedDeliveryDays() != null) {
+
+            return ShippingInfoDto.builder()
+                    .fee(product.getShippingFee())
+                    .freeShippingThreshold(product.getFreeShippingThreshold())
+                    .estimatedDays(product.getEstimatedDeliveryDays())
+                    .build();
+        }
+
+        return null;
+    }
+
+    /**
+     * Product에서 상품 변형 리스트 생성
+     * ProductVariant 엔티티를 ProductVariantDto로 변환
+     *
+     * @param product 상품 엔티티
+     * @return 상품 변형 DTO 리스트 (변형이 없으면 빈 리스트)
+     */
+    private List<ProductVariantDto> buildVariants(Product product) {
+        if (product.getProductVariants() == null || product.getProductVariants().isEmpty()) {
+            return List.of();
+        }
+
+        return product.getProductVariants().stream()
+                .map(variant -> ProductVariantDto.builder()
+                        .id(variant.getId())
+                        .name(variant.getVariantName())
+                        .price(variant.getPrice())
+                        .stock(variant.getStock())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

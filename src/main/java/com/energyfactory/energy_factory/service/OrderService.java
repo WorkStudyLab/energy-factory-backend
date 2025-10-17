@@ -56,10 +56,11 @@ public class OrderService {
             Product product = productRepository.findById(itemDto.getProductId())
                     .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
+            // TODO: Variant 기반 재고 확인으로 변경 필요
             // 재고 확인
-            if (product.getStockQuantity() < itemDto.getQuantity()) {
-                throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
-            }
+            // if (product.getStockQuantity() < itemDto.getQuantity()) {
+            //     throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
+            // }
 
             // 가격 검증 (클라이언트에서 전달한 가격과 실제 상품 가격 비교)
             if (!product.getPrice().equals(itemDto.getPrice())) {
@@ -73,8 +74,9 @@ public class OrderService {
             // 총액 누적
             totalPrice = totalPrice.add(orderItem.getTotalPrice());
 
+            // TODO: Variant 기반 재고 차감으로 변경 필요
             // 재고 차감
-            product.decreaseStock(itemDto.getQuantity());
+            // product.decreaseStock(itemDto.getQuantity());
         }
 
         // 4. 총액 설정 및 주문 저장
@@ -200,11 +202,12 @@ public class OrderService {
         // 주문 취소
         order.cancel();
 
+        // TODO: Variant 기반 재고 복원으로 변경 필요
         // 재고 복원
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = orderItem.getProduct();
-            product.increaseStock(orderItem.getQuantity());
-        }
+        // for (OrderItem orderItem : order.getOrderItems()) {
+        //     Product product = orderItem.getProduct();
+        //     product.increaseStock(orderItem.getQuantity());
+        // }
 
         return convertToResponseDto(order);
     }
