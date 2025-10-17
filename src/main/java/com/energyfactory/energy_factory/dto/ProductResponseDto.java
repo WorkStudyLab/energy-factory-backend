@@ -64,8 +64,14 @@ public class ProductResponseDto {
     @Schema(description = "태그 목록")
     private List<TagResponseDto> tags;
 
-    @Schema(description = "영양성분 목록")
-    private List<NutrientResponseDto> nutrients;
+    @Schema(description = "영양 성분 정보")
+    private NutritionDto nutrition;
+
+    @Schema(description = "비타민 & 미네랄 목록")
+    private List<VitaminMineralDto> vitaminsAndMinerals;
+
+    @Schema(description = "피트니스 목표별 점수")
+    private GoalScoresDto goalScores;
 
     @Getter
     @Builder
@@ -76,22 +82,5 @@ public class ProductResponseDto {
 
         @Schema(description = "태그명", example = "고단백")
         private String name;
-    }
-
-    @Getter
-    @Builder
-    @Schema(description = "영양성분 정보")
-    public static class NutrientResponseDto {
-        @Schema(description = "영양성분 ID", example = "1")
-        private Long id;
-
-        @Schema(description = "영양소명", example = "단백질")
-        private String name;
-
-        @Schema(description = "함량", example = "25.5")
-        private String value;
-
-        @Schema(description = "단위", example = "g")
-        private String unit;
     }
 }

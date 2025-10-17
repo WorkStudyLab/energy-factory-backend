@@ -38,6 +38,9 @@ public class ProductNutrient {
     @Column(name = "unit", nullable = false, columnDefinition = "VARCHAR(20) NOT NULL COMMENT '단위(g,kcal)'")
     private String unit;
 
+    @Column(name = "daily_percentage", columnDefinition = "INT COMMENT '일일 권장 섭취량 대비 % (0-100)'")
+    private Integer dailyPercentage;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP NOT NULL COMMENT '등록일'")
     private LocalDateTime createdAt;

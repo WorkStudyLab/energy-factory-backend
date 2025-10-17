@@ -1,8 +1,8 @@
 package com.energyfactory.energy_factory.service;
 
-import com.energyfactory.energy_factory.dto.ProductListResponseDto;
-import com.energyfactory.energy_factory.dto.ProductResponseDto;
+import com.energyfactory.energy_factory.dto.*;
 import com.energyfactory.energy_factory.entity.Product;
+import com.energyfactory.energy_factory.entity.ProductNutrient;
 import com.energyfactory.energy_factory.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -180,17 +181,13 @@ public class ProductService {
                         .name(productTag.getTag().getName())
                         .build())
                 .collect(Collectors.toList());
-        
+
         // 영양성분 변환
-        List<ProductResponseDto.NutrientResponseDto> nutrients = product.getProductNutrients().stream()
-                .map(nutrient -> ProductResponseDto.NutrientResponseDto.builder()
-                        .id(nutrient.getId())
-                        .name(nutrient.getName())
-                        .value(nutrient.getValue())
-                        .unit(nutrient.getUnit())
-                        .build())
-                .collect(Collectors.toList());
-        
+        List<ProductNutrient> nutrients = product.getProductNutrients();
+        NutritionDto nutrition = buildNutritionDto(nutrients);
+        List<VitaminMineralDto> vitaminsAndMinerals = buildVitaminMinerals(nutrients);
+        GoalScoresDto goalScores = buildGoalScores(product);
+
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -209,7 +206,9 @@ public class ProductService {
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .tags(tags)
-                .nutrients(nutrients)
+                .nutrition(nutrition)
+                .vitaminsAndMinerals(vitaminsAndMinerals)
+                .goalScores(goalScores)
                 .build();
     }
 
@@ -221,7 +220,7 @@ public class ProductService {
         List<String> tagNames = product.getProductTags().stream()
                 .map(productTag -> productTag.getTag().getName())
                 .collect(Collectors.toList());
-        
+
         return ProductListResponseDto.ProductSummaryDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -237,5 +236,79 @@ public class ProductService {
                 .reviewCount(product.getReviewCount())
                 .tags(tagNames)
                 .build();
+    }
+
+    /**
+     * ProductNutrient 리스트에서 NutritionDto 생성
+     */
+    private NutritionDto buildNutritionDto(List<ProductNutrient> nutrients) {
+        NutritionDto.NutritionDtoBuilder builder = NutritionDto.builder();
+
+        for (ProductNutrient n : nutrients) {
+            String name = n.getName();
+            String value = n.getValue();
+
+            try {
+                switch (name) {
+                    case "칼로리" -> builder.calories(Integer.parseInt(value));
+                    case "단백질" -> builder.protein(new BigDecimal(value));
+                    case "탄수화물" -> builder.carbs(new BigDecimal(value));
+                    case "지방" -> builder.fat(new BigDecimal(value));
+                    case "포화지방" -> builder.saturatedFat(new BigDecimal(value));
+                    case "트랜스지방" -> builder.transFat(new BigDecimal(value));
+                    case "콜레스테롤" -> builder.cholesterol(Integer.parseInt(value));
+                    case "나트륨" -> builder.sodium(Integer.parseInt(value));
+                    case "식이섬유" -> builder.fiber(new BigDecimal(value));
+                    case "당류" -> builder.sugars(new BigDecimal(value));
+                }
+            } catch (NumberFormatException e) {
+                // 변환 실패 시 무시 (해당 영양소는 null로 유지)
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * ProductNutrient 리스트에서 비타민/미네랄 리스트 생성
+     */
+    private List<VitaminMineralDto> buildVitaminMinerals(List<ProductNutrient> nutrients) {
+        // 주요 영양소 목록 (제외할 항목들)
+        List<String> mainNutrients = Arrays.asList(
+                "칼로리", "단백질", "탄수화물", "지방",
+                "포화지방", "트랜스지방", "콜레스테롤", "나트륨", "식이섬유", "당류"
+        );
+
+        return nutrients.stream()
+                .filter(n -> !mainNutrients.contains(n.getName()))  // 주요 영양소 제외
+                .filter(n -> n.getDailyPercentage() != null)        // daily% 있는 것만
+                .map(n -> VitaminMineralDto.builder()
+                        .name(n.getName())
+                        .amount(n.getValue() + n.getUnit())
+                        .daily(n.getDailyPercentage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Product에서 목표별 점수 DTO 생성
+     */
+    private GoalScoresDto buildGoalScores(Product product) {
+        GoalScoresDto dto = GoalScoresDto.builder()
+                .muscleGain(product.getScoreMuscleGain())
+                .weightLoss(product.getScoreWeightLoss())
+                .energy(product.getScoreEnergy())
+                .recovery(product.getScoreRecovery())
+                .health(product.getScoreHealth())
+                .build();
+
+        // 모든 점수가 null이면 null 반환
+        if (dto.getMuscleGain() == null && dto.getWeightLoss() == null
+                && dto.getEnergy() == null && dto.getRecovery() == null
+                && dto.getHealth() == null) {
+            return null;
+        }
+
+        return dto;
     }
 }

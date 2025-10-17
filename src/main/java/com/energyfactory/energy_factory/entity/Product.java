@@ -68,7 +68,23 @@ public class Product {
     @Column(name = "review_count", columnDefinition = "BIGINT DEFAULT 0 COMMENT '리뷰 개수'")
     @Builder.Default
     private Long reviewCount = 0L;
-    
+
+    // ===== 피트니스 목표별 점수 (0.0 ~ 5.0) =====
+    @Column(name = "score_muscle_gain", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '근육 증가 점수 (0.0-5.0)'")
+    private BigDecimal scoreMuscleGain;
+
+    @Column(name = "score_weight_loss", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '체중 감량 점수 (0.0-5.0)'")
+    private BigDecimal scoreWeightLoss;
+
+    @Column(name = "score_energy", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '에너지 향상 점수 (0.0-5.0)'")
+    private BigDecimal scoreEnergy;
+
+    @Column(name = "score_recovery", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '회복 촉진 점수 (0.0-5.0)'")
+    private BigDecimal scoreRecovery;
+
+    @Column(name = "score_health", precision = 2, scale = 1, columnDefinition = "DECIMAL(2,1) COMMENT '전반적 건강 점수 (0.0-5.0)'")
+    private BigDecimal scoreHealth;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP NOT NULL COMMENT '등록일'")
     private LocalDateTime createdAt;
