@@ -69,12 +69,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * 브랜드별 상품 조회
      */
     Page<Product> findByBrand(String brand, Pageable pageable);
-    
-    /**
-     * 재고가 있는 상품만 조회
-     */
-    Page<Product> findByStockQuantityGreaterThan(Long minStock, Pageable pageable);
-    
+
+    // TODO: Variant 기반 재고 조회로 변경 필요
+    // /**
+    //  * 재고가 있는 상품만 조회
+    //  */
+    // Page<Product> findByStockQuantityGreaterThan(Long minStock, Pageable pageable);
+
     /**
      * 통합 검색: 상품명, 태그명, 영양소명 검색
      * 하나의 키워드로 여러 필드를 동시에 검색
