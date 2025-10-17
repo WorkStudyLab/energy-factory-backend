@@ -122,12 +122,16 @@ public class ProductService {
         List<VitaminMineralDto> vitaminsAndMinerals = buildVitaminMinerals(nutrients);  // 비타민/미네랄
         GoalScoresDto goalScores = buildGoalScores(product);                        // 피트니스 목표별 점수
 
+        // 이미지 목록 생성: imageUrl을 배열로 변환 (현재는 단일 이미지를 배열에 담음)
+        List<String> images = buildImagesList(product.getImageUrl());
+
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .category(product.getCategory())
                 .imageUrl(product.getImageUrl())
+                .images(images)
                 .brand(product.getBrand())
                 .weight(product.getWeight())
                 .description(product.getDescription())
@@ -275,5 +279,19 @@ public class ProductService {
                 .products(products)
                 .pageInfo(pageInfo)
                 .build();
+    }
+
+    /**
+     * 이미지 URL을 배열로 변환
+     * 현재는 단일 이미지를 배열에 담아 반환 (향후 복수 이미지 지원 대비)
+     *
+     * @param imageUrl 단일 이미지 URL
+     * @return 이미지 URL 리스트 (null 또는 빈 문자열인 경우 빈 리스트)
+     */
+    private List<String> buildImagesList(String imageUrl) {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            return List.of();
+        }
+        return List.of(imageUrl);
     }
 }

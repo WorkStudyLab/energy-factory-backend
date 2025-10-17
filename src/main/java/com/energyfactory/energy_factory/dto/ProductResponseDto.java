@@ -25,8 +25,11 @@ public class ProductResponseDto {
     @Schema(description = "카테고리", example = "고기")
     private String category;
 
-    @Schema(description = "이미지 URL", example = "https://example.com/image.jpg")
+    @Schema(description = "이미지 URL (대표 이미지)", example = "https://example.com/image.jpg")
     private String imageUrl;
+
+    @Schema(description = "이미지 목록", example = "[\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"]")
+    private List<String> images;
 
     @Schema(description = "브랜드명", example = "프리미엄 한우")
     private String brand;
