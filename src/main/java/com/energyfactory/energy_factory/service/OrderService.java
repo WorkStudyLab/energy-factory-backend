@@ -27,6 +27,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     @Transactional
     public OrderResponseDto createOrder(Long userId, OrderCreateRequestDto requestDto) {
@@ -56,27 +57,43 @@ public class OrderService {
             Product product = productRepository.findById(itemDto.getProductId())
                     .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
-            // TODO: Variant 기반 재고 확인으로 변경 필요
-            // 재고 확인
-            // if (product.getStockQuantity() < itemDto.getQuantity()) {
-            //     throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
-            // }
+            // Variant 조회 (없으면 기본 Variant 사용)
+            ProductVariant variant = null;
+            if (itemDto.getVariantId() != null) {
+                variant = productVariantRepository.findById(itemDto.getVariantId())
+                        .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
-            // 가격 검증 (클라이언트에서 전달한 가격과 실제 상품 가격 비교)
-            if (!product.getPrice().equals(itemDto.getPrice())) {
+                // 선택한 Variant가 해당 상품의 것인지 검증
+                if (!variant.getProduct().getId().equals(product.getId())) {
+                    throw new BusinessException(ResultCode.INVALID_REQUEST);
+                }
+            } else {
+                // variantId가 없으면 기본 Variant 조회
+                variant = productVariantRepository.findByProductIdAndIsDefaultTrue(product.getId());
+                if (variant == null) {
+                    throw new BusinessException(ResultCode.NOT_FOUND);
+                }
+            }
+
+            // 재고 확인
+            if (!variant.hasStock(itemDto.getQuantity().longValue())) {
+                throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
+            }
+
+            // 가격 검증 (클라이언트에서 전달한 가격과 실제 Variant 가격 비교)
+            if (!variant.getPrice().equals(itemDto.getPrice())) {
                 throw new BusinessException(ResultCode.INVALID_PRICE);
             }
 
-            // 주문 항목 생성
-            OrderItem orderItem = OrderItem.of(order, product, itemDto.getQuantity(), itemDto.getPrice());
+            // 주문 항목 생성 (Variant 포함)
+            OrderItem orderItem = OrderItem.of(order, product, variant, itemDto.getQuantity(), itemDto.getPrice());
             orderItems.add(orderItem);
-            
+
             // 총액 누적
             totalPrice = totalPrice.add(orderItem.getTotalPrice());
 
-            // TODO: Variant 기반 재고 차감으로 변경 필요
             // 재고 차감
-            // product.decreaseStock(itemDto.getQuantity());
+            variant.decreaseStock(itemDto.getQuantity().longValue());
         }
 
         // 4. 총액 설정 및 주문 저장
@@ -99,6 +116,7 @@ public class OrderService {
             OrderItem savedOrderItem = OrderItem.builder()
                     .order(savedOrder)
                     .product(orderItem.getProduct())
+                    .productVariant(orderItem.getProductVariant())
                     .quantity(orderItem.getQuantity())
                     .price(orderItem.getPrice())
                     .totalPrice(orderItem.getTotalPrice())
@@ -202,26 +220,37 @@ public class OrderService {
         // 주문 취소
         order.cancel();
 
-        // TODO: Variant 기반 재고 복원으로 변경 필요
         // 재고 복원
-        // for (OrderItem orderItem : order.getOrderItems()) {
-        //     Product product = orderItem.getProduct();
-        //     product.increaseStock(orderItem.getQuantity());
-        // }
+        for (OrderItem orderItem : order.getOrderItems()) {
+            ProductVariant variant = orderItem.getProductVariant();
+            if (variant != null) {
+                variant.increaseStock(orderItem.getQuantity().longValue());
+            }
+        }
 
         return convertToResponseDto(order);
     }
 
     private OrderResponseDto convertToResponseDto(Order order) {
         List<OrderResponseDto.OrderItemResponseDto> orderItemDtos = order.getOrderItems().stream()
-                .map(orderItem -> OrderResponseDto.OrderItemResponseDto.builder()
-                        .id(orderItem.getId())
-                        .productId(orderItem.getProduct().getId())
-                        .productName(orderItem.getProduct().getName())
-                        .quantity(orderItem.getQuantity())
-                        .price(orderItem.getPrice())
-                        .totalPrice(orderItem.getTotalPrice())
-                        .build())
+                .map(orderItem -> {
+                    OrderResponseDto.OrderItemResponseDto.OrderItemResponseDtoBuilder builder =
+                            OrderResponseDto.OrderItemResponseDto.builder()
+                                    .id(orderItem.getId())
+                                    .productId(orderItem.getProduct().getId())
+                                    .productName(orderItem.getProduct().getName())
+                                    .quantity(orderItem.getQuantity())
+                                    .price(orderItem.getPrice())
+                                    .totalPrice(orderItem.getTotalPrice());
+
+                    // Variant 정보 추가
+                    if (orderItem.getProductVariant() != null) {
+                        builder.variantId(orderItem.getProductVariant().getId())
+                               .variantName(orderItem.getProductVariant().getVariantName());
+                    }
+
+                    return builder.build();
+                })
                 .collect(Collectors.toList());
 
         return OrderResponseDto.builder()

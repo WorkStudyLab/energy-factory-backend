@@ -54,6 +54,9 @@ public class OrderCreateRequestDto {
         @Schema(description = "상품 ID", example = "1", required = true)
         private Long productId;
 
+        @Schema(description = "상품 변형 ID (옵션 선택)", example = "25")
+        private Long variantId;
+
         @NotNull(message = "주문 수량은 필수입니다")
         @Min(value = 1, message = "주문 수량은 1개 이상이어야 합니다")
         @Max(value = 999, message = "주문 수량은 999개 이하여야 합니다")

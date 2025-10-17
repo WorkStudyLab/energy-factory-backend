@@ -34,6 +34,10 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false, columnDefinition = "BIGINT NOT NULL COMMENT '상품 ID'")
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id", columnDefinition = "BIGINT COMMENT '상품 변형 ID (옵션)'")
+    private ProductVariant productVariant;
+
     @Column(name = "quantity", nullable = false, columnDefinition = "INT NOT NULL COMMENT '주문 수량'")
     private Integer quantity;
 
@@ -56,16 +60,22 @@ public class OrderItem {
         return price.multiply(BigDecimal.valueOf(quantity));
     }
 
-    // 주문 아이템 생성 팩토리 메서드
-    public static OrderItem of(Order order, Product product, Integer quantity, BigDecimal price) {
+    // 주문 아이템 생성 팩토리 메서드 (Variant 포함)
+    public static OrderItem of(Order order, Product product, ProductVariant variant, Integer quantity, BigDecimal price) {
         BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(quantity));
-        
+
         return OrderItem.builder()
                 .order(order)
                 .product(product)
+                .productVariant(variant)
                 .quantity(quantity)
                 .price(price)
                 .totalPrice(totalPrice)
                 .build();
+    }
+
+    // 주문 아이템 생성 팩토리 메서드 (Variant 없는 경우 - 하위 호환성)
+    public static OrderItem of(Order order, Product product, Integer quantity, BigDecimal price) {
+        return of(order, product, null, quantity, price);
     }
 }

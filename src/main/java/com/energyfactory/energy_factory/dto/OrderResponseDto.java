@@ -74,6 +74,12 @@ public class OrderResponseDto {
         @Schema(description = "상품 이미지 URL", example = "https://example.com/image.jpg")
         private String productImageUrl;
 
+        @Schema(description = "상품 변형 ID (옵션 선택)", example = "25")
+        private Long variantId;
+
+        @Schema(description = "상품 변형명 (옵션명)", example = "500g")
+        private String variantName;
+
         @Schema(description = "주문 수량", example = "2")
         private Integer quantity;
 
