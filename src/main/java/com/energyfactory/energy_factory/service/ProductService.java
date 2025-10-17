@@ -40,31 +40,13 @@ public class ProductService {
         // 가격 범위 변환
         BigDecimal minPriceBd = minPrice != null ? BigDecimal.valueOf(minPrice) : null;
         BigDecimal maxPriceBd = maxPrice != null ? BigDecimal.valueOf(maxPrice) : null;
-        
+
         // 복합 조건 검색
         Page<Product> productPage = productRepository.findByComplexConditions(
                 category, keyword, minPriceBd, maxPriceBd, status, pageable
         );
-        
-        // DTO 변환
-        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
-                .map(this::convertToProductSummaryDto)
-                .collect(Collectors.toList());
-        
-        // 페이지 정보 생성
-        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
-                .currentPage(productPage.getNumber())
-                .pageSize(productPage.getSize())
-                .totalElements(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
-                .first(productPage.isFirst())
-                .last(productPage.isLast())
-                .build();
-        
-        return ProductListResponseDto.builder()
-                .products(products)
-                .pageInfo(pageInfo)
-                .build();
+
+        return convertPageToListDto(productPage);
     }
 
     /**
@@ -82,24 +64,7 @@ public class ProductService {
      */
     public ProductListResponseDto getProductsByCategory(String category, Pageable pageable) {
         Page<Product> productPage = productRepository.findByCategory(category, pageable);
-        
-        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
-                .map(this::convertToProductSummaryDto)
-                .collect(Collectors.toList());
-        
-        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
-                .currentPage(productPage.getNumber())
-                .pageSize(productPage.getSize())
-                .totalElements(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
-                .first(productPage.isFirst())
-                .last(productPage.isLast())
-                .build();
-        
-        return ProductListResponseDto.builder()
-                .products(products)
-                .pageInfo(pageInfo)
-                .build();
+        return convertPageToListDto(productPage);
     }
 
     /**
@@ -107,7 +72,7 @@ public class ProductService {
      */
     public ProductListResponseDto searchProducts(String keyword, String category, Pageable pageable) {
         Page<Product> productPage;
-        
+
         if (category != null && !category.trim().isEmpty()) {
             // 카테고리 + 키워드 검색
             productPage = productRepository.findByCategoryAndNameContainingIgnoreCase(
@@ -117,24 +82,8 @@ public class ProductService {
             // 키워드만 검색
             productPage = productRepository.findByNameContainingIgnoreCase(keyword, pageable);
         }
-        
-        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
-                .map(this::convertToProductSummaryDto)
-                .collect(Collectors.toList());
-        
-        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
-                .currentPage(productPage.getNumber())
-                .pageSize(productPage.getSize())
-                .totalElements(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
-                .first(productPage.isFirst())
-                .last(productPage.isLast())
-                .build();
-        
-        return ProductListResponseDto.builder()
-                .products(products)
-                .pageInfo(pageInfo)
-                .build();
+
+        return convertPageToListDto(productPage);
     }
 
     /**
@@ -142,7 +91,7 @@ public class ProductService {
      */
     public ProductListResponseDto unifiedSearch(String keyword, String category, Pageable pageable) {
         Page<Product> productPage;
-        
+
         if (category != null && !category.trim().isEmpty()) {
             // 카테고리 + 통합 검색
             productPage = productRepository.searchByKeywordAndCategory(keyword, category, pageable);
@@ -150,31 +99,16 @@ public class ProductService {
             // 통합 검색만
             productPage = productRepository.searchByKeyword(keyword, pageable);
         }
-        
-        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
-                .map(this::convertToProductSummaryDto)
-                .collect(Collectors.toList());
-        
-        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
-                .currentPage(productPage.getNumber())
-                .pageSize(productPage.getSize())
-                .totalElements(productPage.getTotalElements())
-                .totalPages(productPage.getTotalPages())
-                .first(productPage.isFirst())
-                .last(productPage.isLast())
-                .build();
-        
-        return ProductListResponseDto.builder()
-                .products(products)
-                .pageInfo(pageInfo)
-                .build();
+
+        return convertPageToListDto(productPage);
     }
 
     /**
-     * Product 엔티티를 ProductResponseDto로 변환
+     * Product 엔티티를 ProductResponseDto로 변환 (상세 조회용)
+     * 태그, 영양성분(nutrition, vitamins), 목표별 점수를 포함한 전체 정보 반환
      */
     private ProductResponseDto convertToProductResponseDto(Product product) {
-        // 태그 변환
+        // 태그 변환: ProductTag -> TagResponseDto
         List<ProductResponseDto.TagResponseDto> tags = product.getProductTags().stream()
                 .map(productTag -> ProductResponseDto.TagResponseDto.builder()
                         .id(productTag.getTag().getId())
@@ -182,11 +116,11 @@ public class ProductService {
                         .build())
                 .collect(Collectors.toList());
 
-        // 영양성분 변환
+        // 영양성분 변환: ProductNutrient -> NutritionDto, VitaminMineralDto, GoalScoresDto
         List<ProductNutrient> nutrients = product.getProductNutrients();
-        NutritionDto nutrition = buildNutritionDto(nutrients);
-        List<VitaminMineralDto> vitaminsAndMinerals = buildVitaminMinerals(nutrients);
-        GoalScoresDto goalScores = buildGoalScores(product);
+        NutritionDto nutrition = buildNutritionDto(nutrients);                      // 주요 영양소 (칼로리, 단백질 등)
+        List<VitaminMineralDto> vitaminsAndMinerals = buildVitaminMinerals(nutrients);  // 비타민/미네랄
+        GoalScoresDto goalScores = buildGoalScores(product);                        // 피트니스 목표별 점수
 
         return ProductResponseDto.builder()
                 .id(product.getId())
@@ -213,10 +147,11 @@ public class ProductService {
     }
 
     /**
-     * Product 엔티티를 ProductSummaryDto로 변환 (목록용)
+     * Product 엔티티를 ProductSummaryDto로 변환 (목록 조회용)
+     * 상품 리스트에 필요한 기본 정보만 포함 (영양성분 제외)
      */
     private ProductListResponseDto.ProductSummaryDto convertToProductSummaryDto(Product product) {
-        // 태그명 리스트 추출
+        // 태그명만 추출 (목록에서는 ID 불필요)
         List<String> tagNames = product.getProductTags().stream()
                 .map(productTag -> productTag.getTag().getName())
                 .collect(Collectors.toList());
@@ -240,6 +175,7 @@ public class ProductService {
 
     /**
      * ProductNutrient 리스트에서 NutritionDto 생성
+     * 주요 영양소(칼로리, 단백질, 탄수화물, 지방) 및 상세 영양소를 이름별로 매핑
      */
     private NutritionDto buildNutritionDto(List<ProductNutrient> nutrients) {
         NutritionDto.NutritionDtoBuilder builder = NutritionDto.builder();
@@ -249,6 +185,7 @@ public class ProductService {
             String value = n.getValue();
 
             try {
+                // 영양소 이름에 따라 적절한 필드에 값 설정
                 switch (name) {
                     case "칼로리" -> builder.calories(Integer.parseInt(value));
                     case "단백질" -> builder.protein(new BigDecimal(value));
@@ -271,9 +208,10 @@ public class ProductService {
 
     /**
      * ProductNutrient 리스트에서 비타민/미네랄 리스트 생성
+     * 주요 영양소 10개를 제외한 나머지 영양소 중 dailyPercentage가 있는 항목만 추출
      */
     private List<VitaminMineralDto> buildVitaminMinerals(List<ProductNutrient> nutrients) {
-        // 주요 영양소 목록 (제외할 항목들)
+        // 주요 영양소 목록 (NutritionDto에 포함되는 항목들)
         List<String> mainNutrients = Arrays.asList(
                 "칼로리", "단백질", "탄수화물", "지방",
                 "포화지방", "트랜스지방", "콜레스테롤", "나트륨", "식이섬유", "당류"
@@ -281,17 +219,18 @@ public class ProductService {
 
         return nutrients.stream()
                 .filter(n -> !mainNutrients.contains(n.getName()))  // 주요 영양소 제외
-                .filter(n -> n.getDailyPercentage() != null)        // daily% 있는 것만
+                .filter(n -> n.getDailyPercentage() != null)        // dailyPercentage가 있는 것만 (비타민/미네랄 구분)
                 .map(n -> VitaminMineralDto.builder()
                         .name(n.getName())
-                        .amount(n.getValue() + n.getUnit())
+                        .amount(n.getValue() + n.getUnit())  // "0.5" + "mg" = "0.5mg"
                         .daily(n.getDailyPercentage())
                         .build())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Product에서 목표별 점수 DTO 생성
+     * Product에서 피트니스 목표별 점수 DTO 생성
+     * 모든 점수가 null인 경우 null 반환 (JSON 응답에서 제외됨)
      */
     private GoalScoresDto buildGoalScores(Product product) {
         GoalScoresDto dto = GoalScoresDto.builder()
@@ -302,7 +241,7 @@ public class ProductService {
                 .health(product.getScoreHealth())
                 .build();
 
-        // 모든 점수가 null이면 null 반환
+        // 모든 점수가 null이면 null 반환 (상품에 점수 정보가 없는 경우)
         if (dto.getMuscleGain() == null && dto.getWeightLoss() == null
                 && dto.getEnergy() == null && dto.getRecovery() == null
                 && dto.getHealth() == null) {
@@ -310,5 +249,31 @@ public class ProductService {
         }
 
         return dto;
+    }
+
+    /**
+     * Page<Product>를 ProductListResponseDto로 변환 (공통 로직)
+     * 상품 목록과 페이징 정보를 포함한 응답 DTO 생성
+     */
+    private ProductListResponseDto convertPageToListDto(Page<Product> productPage) {
+        // 상품 엔티티 리스트를 요약 DTO로 변환
+        List<ProductListResponseDto.ProductSummaryDto> products = productPage.getContent().stream()
+                .map(this::convertToProductSummaryDto)
+                .collect(Collectors.toList());
+
+        // 페이징 정보 생성
+        ProductListResponseDto.PageInfoDto pageInfo = ProductListResponseDto.PageInfoDto.builder()
+                .currentPage(productPage.getNumber())
+                .pageSize(productPage.getSize())
+                .totalElements(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
+                .first(productPage.isFirst())
+                .last(productPage.isLast())
+                .build();
+
+        return ProductListResponseDto.builder()
+                .products(products)
+                .pageInfo(pageInfo)
+                .build();
     }
 }
