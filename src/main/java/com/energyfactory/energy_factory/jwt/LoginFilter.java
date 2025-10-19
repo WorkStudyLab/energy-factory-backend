@@ -8,6 +8,7 @@ import com.energyfactory.energy_factory.service.RefreshTokenService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -105,15 +106,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             // Redis에 Refresh Token 저장
             refreshTokenService.saveRefreshToken(username, refreshToken);
 
-            // 응답 생성 (클라이언트에게는 토큰 ID만 전달하거나, 실제 토큰 전달)
-            LoginResponseDto loginResponse = LoginResponseDto.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken) // 실제 토큰을 전달 (또는 토큰 ID만 전달할 수도 있음)
-                    .tokenType("Bearer")
-                    .build();
+            // HttpOnly 쿠키에 토큰 저장 (보안 강화)
+            addTokenCookie(response, "accessToken", accessToken, 30 * 60); // 30분
+            addTokenCookie(response, "refreshToken", refreshToken, 7 * 24 * 60 * 60); // 7일
 
-            writeJsonResponse(response, ApiResponse.of(ResultCode.LOGIN_SUCCESS, loginResponse));
-            
+            // 성공 응답 (토큰은 쿠키에 있으므로 바디에는 성공 메시지만 전달)
+            writeJsonResponse(response, ApiResponse.of(ResultCode.LOGIN_SUCCESS, null));
+
         } catch (Exception e) {
             unsuccessfulAuthentication(request, response, null);
         }
@@ -132,12 +131,31 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private void writeJsonResponse(HttpServletResponse response, ApiResponse<?> apiResponse) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        
+
         if (apiResponse.getStatus() != 200) {
             response.setStatus(apiResponse.getStatus());
         }
-        
+
         ObjectMapper mapper = new ObjectMapper();
         response.getWriter().write(mapper.writeValueAsString(apiResponse));
+    }
+
+    /**
+     * HttpOnly 쿠키에 토큰 추가
+     *
+     * @param response HTTP 응답
+     * @param name     쿠키 이름
+     * @param value    토큰 값
+     * @param maxAge   만료 시간 (초)
+     */
+    private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);  // JavaScript 접근 방지 (XSS 방어)
+        cookie.setSecure(false);   // 개발 환경: false, 운영 환경: true (HTTPS)
+        cookie.setPath("/");       // 모든 경로에서 접근 가능
+        cookie.setMaxAge(maxAge);  // 쿠키 만료 시간 (초)
+        // cookie.setSameSite("Lax"); // CSRF 방어 (Spring Boot 3.x에서는 별도 설정 필요)
+
+        response.addCookie(cookie);
     }
 }
