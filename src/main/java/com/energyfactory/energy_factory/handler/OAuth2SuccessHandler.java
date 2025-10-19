@@ -25,6 +25,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${jwt.refresh-token-expiration}")
     private Long refreshTokenExpiration;
 
+    @Value("${app.oauth2.redirect-url}")
+    private String frontendRedirectUrl;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -47,9 +50,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addTokenCookie(response, "refreshToken", refreshToken, refreshTokenExpiration.intValue()); // 7일
 
         // 프론트엔드로 리다이렉트 (토큰은 쿠키에 있음)
-        String redirectUrl = "http://localhost:8080/oauth2-test.html";
-
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+        getRedirectStrategy().sendRedirect(request, response, frontendRedirectUrl);
     }
 
     /**

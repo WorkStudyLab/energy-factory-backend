@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 테스트 페이지</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 10px;
+        }
+        .login-form {
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .btn-primary {
+            background-color: #4285f4;
+            color: white;
+        }
+        .btn-naver {
+            background-color: #03C75A;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.show {
+            display: block;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            color: #0c5460;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .server-info {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="server-info">
+        <strong>현재 서버:</strong> <span id="serverUrl"></span>
+    </div>
+
+    <div class="container">
+        <h1>🔐 인증 테스트 페이지</h1>
+
+        <!-- 일반 로그인 -->
+        <h2>1️⃣ 일반 로그인 (이메일/비밀번호)</h2>
+        <div class="login-form">
+            <input type="email" id="email" placeholder="이메일" value="test@example.com">
+            <input type="password" id="password" placeholder="비밀번호" value="password123">
+            <button class="button btn-primary" onclick="normalLogin()">로그인</button>
+        </div>
+
+        <!-- 소셜 로그인 -->
+        <h2>2️⃣ 소셜 로그인 (네이버)</h2>
+        <button class="button btn-naver" onclick="naverLogin()">
+            네이버로 로그인
+        </button>
+
+        <!-- API 테스트 -->
+        <h2>3️⃣ API 테스트 (인증 필요)</h2>
+        <button class="button btn-success" onclick="testProductsAPI()">
+            상품 목록 조회 (쿠키 인증)
+        </button>
+
+        <!-- 로그아웃 -->
+        <h2>4️⃣ 로그아웃</h2>
+        <button class="button btn-danger" onclick="logout()">
+            로그아웃 (쿠키 삭제)
+        </button>
+    </div>
+
+    <!-- 결과 표시 -->
+    <div class="container">
+        <h2>📋 결과</h2>
+        <div id="result" class="status"></div>
+    </div>
+
+    <script>
+        // 현재 서버 URL 설정
+        const BASE_URL = window.location.origin;
+        document.getElementById('serverUrl').textContent = BASE_URL;
+
+        // 페이지 로드시 쿠키 확인
+        window.onload = function() {
+            if (hasAuthCookie()) {
+                showResult('success', '✅ 로그인된 상태입니다! (쿠키에 토큰 존재)');
+            } else {
+                showResult('info', 'ℹ️ 로그인되지 않은 상태입니다.');
+            }
+        };
+
+        // 1. 일반 로그인
+        async function normalLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showResult('error', '❌ 이메일과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    credentials: 'include', // 쿠키 전송/수신
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('success', `✅ 로그인 성공!\n\n응답:\n${JSON.stringify(data, null, 2)}\n\n⚠️ 토큰은 HttpOnly 쿠키에 저장되어 있어 JavaScript로 접근할 수 없습니다.`);
+                } else {
+                    showResult('error', `❌ 로그인 실패\n\n응답:\n${JSON.stringify(data, null, 2)}`);
+                }
+            } catch (error) {
+                showResult('error', `❌ 오류 발생: ${error.message}`);
+            }
+        }
+
+        // 2. 네이버 로그인
+        function naverLogin() {
+            window.location.href = `${BASE_URL}/oauth2/authorization/naver`;
+        }
+
+        // 3. 상품 API 테스트
+        async function testProductsAPI() {
+            try {
+                showResult('info', '⏳ 상품 목록을 조회 중입니다...');
+
+                const response = await fetch(`${BASE_URL}/api/products`, {
+                    method: 'GET',
+                    credentials: 'include', // 쿠키 전송
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('success', `✅ 상품 조회 성공! (쿠키 인증 성공)\n\n응답:\n${JSON.stringify(data, null, 2)}`);
+                } else if (response.status === 401 || response.status === 403) {
+                    showResult('error', `❌ 인증 실패 (${response.status})\n\n로그인이 필요합니다.\n\n응답:\n${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult('error', `❌ 요청 실패 (${response.status})\n\n응답:\n${JSON.stringify(data, null, 2)}`);
+                }
+            } catch (error) {
+                showResult('error', `❌ 오류 발생: ${error.message}`);
+            }
+        }
+
+        // 4. 로그아웃
+        function logout() {
+            // 쿠키 삭제
+            document.cookie = 'accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+            showResult('success', '✅ 로그아웃되었습니다. (쿠키 삭제 완료)');
+        }
+
+        // 헬퍼 함수
+        function hasAuthCookie() {
+            return document.cookie.includes('accessToken');
+        }
+
+        function showResult(type, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `status show ${type}`;
+            resultDiv.innerHTML = `<pre>${message}</pre>`;
+        }
+    </script>
+</body>
+</html>
