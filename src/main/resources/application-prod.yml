@@ -9,7 +9,7 @@ spring:
       client:
         registration:
           naver:
-            client-id: ${NAVER_CLIENT_ID}    # 환경변수로 관리
+            client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
@@ -28,14 +28,15 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+
   jpa:
     hibernate:
-      ddl-auto: validate  # 운영에서는 validate 사용
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: false
-    show-sql: false
+        format_sql: true
+    show-sql: true
 
   data:
     redis:
@@ -49,10 +50,20 @@ spring:
           min-idle: 0
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET_KEY}
   refresh-token-expiration: 604800
+
+# OAuth2 리다이렉트 URL 설정
+app:
+  oauth2:
+    redirect-url: ${FRONTEND_URL:http://localhost:3000}
+  cookie:
+    secure: false  # 개발 환경이므로 false
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
 
 logging:
   level:
     root: INFO
-    com.energyfactory.energy_factory: INFO
+    com.energyfactory.energy_factory: DEBUG
+    org.springframework.security: DEBUG
