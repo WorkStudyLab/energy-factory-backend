@@ -56,6 +56,12 @@ public class ProductListResponseDto {
 
         @Schema(description = "태그 목록", example = "[\"고단백\", \"다이어트\"]")
         private List<String> tags;
+
+        @Schema(description = "할인 전 원가", example = "35000.00")
+        private java.math.BigDecimal originalPrice;
+
+        @Schema(description = "할인율 (%)", example = "15")
+        private Integer discount;
     }
 
     @Getter

@@ -182,6 +182,8 @@ public class ProductService {
                 .averageRating(product.getAverageRating())
                 .reviewCount(product.getReviewCount())
                 .tags(tagNames)
+                .originalPrice(product.getOriginalPrice())
+                .discount(product.getDiscountRate())
                 .build();
     }
 
