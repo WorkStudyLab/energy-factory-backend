@@ -6,6 +6,9 @@ import com.energyfactory.energy_factory.exception.AuthException;
 import com.energyfactory.energy_factory.jwt.JwtUtil;
 import com.energyfactory.energy_factory.service.RefreshTokenService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,10 +31,11 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<TokenRefreshResponseDto>> refreshToken(@RequestBody Map<String, String> request) {
-        
-        String refreshToken = request.get("refreshToken");
-        
+    public ResponseEntity<ApiResponse<Void>> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+        // 쿠키에서 refreshToken 추출
+        String refreshToken = getCookieValue(request, "refreshToken");
+
         if (refreshToken == null || refreshToken.isEmpty()) {
             throw new AuthException(ResultCode.REFRESH_TOKEN_REQUIRED);
         }
@@ -61,19 +65,20 @@ public class AuthController {
         // 새로운 Refresh Token 발급
         String newRefreshToken = jwtUtil.createRefreshToken(username, 7 * 24 * 60 * 60 * 1000L);
         refreshTokenService.saveRefreshToken(username, newRefreshToken);
-        
-        TokenRefreshResponseDto responseData = TokenRefreshResponseDto.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .tokenType("Bearer")
-                .build();
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.TOKEN_REFRESH_SUCCESS, responseData));
+
+        // 쿠키에 새로운 토큰 설정
+        addTokenCookie(response, "accessToken", newAccessToken, 30 * 60); // 30분
+        addTokenCookie(response, "refreshToken", newRefreshToken, 7 * 24 * 60 * 60); // 7일
+
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.TOKEN_REFRESH_SUCCESS, null));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
-        
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
+
+        // 쿠키에서 refreshToken 추출
+        String refreshToken = getCookieValue(request, "refreshToken");
+
         if (refreshToken != null && !refreshToken.isEmpty()) {
             try {
                 // 토큰이 유효한 경우에만 Redis에서 삭제
@@ -85,6 +90,54 @@ public class AuthController {
                 System.out.println("Invalid token during logout, but proceeding: " + e.getMessage());
             }
         }
+
+        // 쿠키 삭제 (만료 시간을 0으로 설정)
+        deleteCookie(response, "accessToken");
+        deleteCookie(response, "refreshToken");
+
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
+    }
+
+    /**
+     * 쿠키에서 값을 추출하는 헬퍼 메서드
+     */
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (name.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * HttpOnly 쿠키에 토큰 추가
+     */
+    private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);  // JavaScript 접근 방지 (XSS 방어)
+        cookie.setSecure(true);    // HTTPS에서만 쿠키 전송 (프로덕션 환경)
+        cookie.setPath("/");       // 모든 경로에서 접근 가능
+        cookie.setMaxAge(maxAge);  // 쿠키 만료 시간 (초)
+        cookie.setAttribute("SameSite", "None");  // Cross-site 쿠키 허용 (Secure=true 필요)
+
+        response.addCookie(cookie);
+    }
+
+    /**
+     * 쿠키 삭제 (만료 시간을 0으로 설정)
+     */
+    private void deleteCookie(HttpServletResponse response, String name) {
+        Cookie cookie = new Cookie(name, "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);  // 즉시 만료
+        cookie.setAttribute("SameSite", "None");
+
+        response.addCookie(cookie);
     }
 }
