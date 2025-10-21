@@ -56,11 +56,11 @@ jwt:
 # OAuth2 리다이렉트 URL 설정
 app:
   oauth2:
-    redirect-url: ${FRONTEND_URL:http://localhost:3000}
+    redirect-url: ${FRONTEND_URL:https://d1o0ytu060swr1.cloudfront.net}
   cookie:
-    secure: false  # 개발 환경이므로 false
+    secure: true  # 프로덕션 환경 HTTPS
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+    allowed-origins: ${ALLOWED_ORIGINS:https://d1o0ytu060swr1.cloudfront.net}
 
 logging:
   level:

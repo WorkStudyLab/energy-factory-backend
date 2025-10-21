@@ -151,10 +151,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);  // JavaScript 접근 방지 (XSS 방어)
-        cookie.setSecure(false);   // 개발 환경: false, 운영 환경: true (HTTPS)
+        cookie.setSecure(true);    // HTTPS에서만 쿠키 전송 (프로덕션 환경)
         cookie.setPath("/");       // 모든 경로에서 접근 가능
         cookie.setMaxAge(maxAge);  // 쿠키 만료 시간 (초)
-        // cookie.setSameSite("Lax"); // CSRF 방어 (Spring Boot 3.x에서는 별도 설정 필요)
+        cookie.setAttribute("SameSite", "None");  // Cross-site 쿠키 허용 (Secure=true 필요)
 
         response.addCookie(cookie);
     }
