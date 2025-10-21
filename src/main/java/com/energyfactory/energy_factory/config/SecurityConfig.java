@@ -5,6 +5,7 @@ import com.energyfactory.energy_factory.handler.OAuth2SuccessHandler;
 import com.energyfactory.energy_factory.jwt.JwtFilter;
 import com.energyfactory.energy_factory.jwt.JwtUtil;
 import com.energyfactory.energy_factory.jwt.LoginFilter;
+import com.energyfactory.energy_factory.repository.UserRepository;
 import com.energyfactory.energy_factory.service.CustomOAuth2UserService;
 import com.energyfactory.energy_factory.service.RefreshTokenService;
 import org.springframework.context.annotation.Bean;
@@ -33,16 +34,19 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, 
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil,
                          RefreshTokenService refreshTokenService, CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-                         CustomOAuth2UserService customOAuth2UserService, OAuth2SuccessHandler oAuth2SuccessHandler) {
+                         CustomOAuth2UserService customOAuth2UserService, OAuth2SuccessHandler oAuth2SuccessHandler,
+                         UserRepository userRepository) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customOAuth2UserService = customOAuth2UserService;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.userRepository = userRepository;
     }
 
     //AuthenticationManager Bean 등록
@@ -58,7 +62,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll()
+                        // 인증 불필요 (공개)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/tags/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
+
+                        // Swagger 관련
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+
+                        // 인증 필요
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/payments/**").authenticated()
+                        .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/user-profile/**").authenticated()
+                        .requestMatchers("/api/user-address/**").authenticated()
+
+                        .anyRequest().authenticated()
                 )
                 .formLogin(formLogin -> formLogin.disable())
                 .oauth2Login(oauth2 -> oauth2
@@ -74,7 +96,7 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class)
+                .addFilterBefore(new JwtFilter(jwtUtil, userRepository), LoginFilter.class)
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정

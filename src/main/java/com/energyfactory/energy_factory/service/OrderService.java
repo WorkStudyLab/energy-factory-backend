@@ -28,6 +28,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Transactional
     public OrderResponseDto createOrder(Long userId, OrderCreateRequestDto requestDto) {
@@ -290,5 +291,94 @@ public class OrderService {
                 .representativeProductName(representativeProductName)
                 .createdAt(order.getCreatedAt())
                 .build();
+    }
+
+    /**
+     * 장바구니 기반 주문 생성
+     * 선택한 장바구니 아이템들로 주문을 생성하고, 주문 성공 시 장바구니에서 삭제
+     */
+    @Transactional
+    public OrderResponseDto createOrderFromCart(Long userId, OrderFromCartRequestDto requestDto) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        // 2. 장바구니 아이템 조회
+        List<CartItem> cartItems = requestDto.getCartItemIds().stream()
+                .map(cartItemId -> cartItemRepository.findByUserAndId(user, cartItemId)
+                        .orElseThrow(() -> new BusinessException(ResultCode.CART_ITEM_NOT_FOUND)))
+                .collect(Collectors.toList());
+
+        // 3. 주문 생성
+        Order order = Order.builder()
+                .user(user)
+                .orderNumber(Order.generateOrderNumber())
+                .recipientName(requestDto.getRecipientName())
+                .phoneNumber(requestDto.getPhoneNumber())
+                .postalCode(requestDto.getPostalCode())
+                .addressLine1(requestDto.getAddressLine1())
+                .addressLine2(requestDto.getAddressLine2())
+                .status(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
+
+        // 4. 주문 항목 생성 및 재고 확인
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (CartItem cartItem : cartItems) {
+            ProductVariant variant = cartItem.getProductVariant();
+            Product product = cartItem.getProduct();
+            Integer quantity = cartItem.getQuantity();
+
+            // 재고 확인
+            if (!variant.hasStock(quantity.longValue())) {
+                throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
+            }
+
+            // 주문 항목 생성
+            OrderItem orderItem = OrderItem.of(order, product, variant, quantity, variant.getPrice());
+            orderItems.add(orderItem);
+
+            // 총액 누적
+            totalPrice = totalPrice.add(orderItem.getTotalPrice());
+
+            // 재고 차감
+            variant.decreaseStock(quantity.longValue());
+        }
+
+        // 5. 총액 설정 및 주문 저장
+        Order savedOrder = Order.builder()
+                .user(order.getUser())
+                .orderNumber(order.getOrderNumber())
+                .totalPrice(totalPrice)
+                .status(order.getStatus())
+                .paymentStatus(order.getPaymentStatus())
+                .recipientName(order.getRecipientName())
+                .phoneNumber(order.getPhoneNumber())
+                .postalCode(order.getPostalCode())
+                .addressLine1(order.getAddressLine1())
+                .addressLine2(order.getAddressLine2())
+                .build();
+        savedOrder = orderRepository.save(savedOrder);
+
+        // 6. 주문 항목들을 주문에 추가하고 저장
+        for (OrderItem orderItem : orderItems) {
+            OrderItem savedOrderItem = OrderItem.builder()
+                    .order(savedOrder)
+                    .product(orderItem.getProduct())
+                    .productVariant(orderItem.getProductVariant())
+                    .quantity(orderItem.getQuantity())
+                    .price(orderItem.getPrice())
+                    .totalPrice(orderItem.getTotalPrice())
+                    .build();
+            savedOrder.getOrderItems().add(savedOrderItem);
+        }
+        orderItemRepository.saveAll(savedOrder.getOrderItems());
+
+        // 7. 주문 성공 시 장바구니에서 삭제
+        cartItemRepository.deleteAll(cartItems);
+
+        return convertToResponseDto(savedOrder);
     }
 }

@@ -43,6 +43,11 @@ public enum ResultCode {
     DUPLICATE_REQUEST(HttpStatus.CONFLICT, "40500001", "이미 프로필이 존재합니다."),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "40500002", "프로필을 찾을 수 없습니다."),
 
+    // Cart 도메인 에러 코드
+    CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "40600001", "장바구니 아이템을 찾을 수 없습니다."),
+    CART_ITEM_ALREADY_EXISTS(HttpStatus.CONFLICT, "40600002", "이미 장바구니에 담긴 상품입니다."),
+    CART_ITEM_ACCESS_DENIED(HttpStatus.FORBIDDEN, "40600003", "해당 장바구니 아이템에 접근할 권한이 없습니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "50000000", "서버에 오류가 발생했습니다.");
 
     private final HttpStatus status;

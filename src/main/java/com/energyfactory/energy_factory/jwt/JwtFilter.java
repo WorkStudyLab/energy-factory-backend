@@ -2,6 +2,7 @@ package com.energyfactory.energy_factory.jwt;
 
 import com.energyfactory.energy_factory.dto.CustomUserDetails;
 import com.energyfactory.energy_factory.entity.User;
+import com.energyfactory.energy_factory.repository.UserRepository;
 import com.energyfactory.energy_factory.utils.enums.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,13 +14,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Optional;
 
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -63,22 +67,18 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // 5. 토큰에서 username과 role 획득
-            String username = jwtUtil.getUsername(token);
-            String role = jwtUtil.getRole(token);
+            // 5. 토큰에서 username(email) 획득
+            String email = jwtUtil.getUsername(token);
 
-            // role이 null이거나 빈 문자열인 경우 처리
-            if (role == null || role.trim().isEmpty()) {
-                System.out.println("role is null or empty");
+            // 6. DB에서 실제 User 엔티티 조회
+            Optional<User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isEmpty()) {
+                System.out.println("User not found: " + email);
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 6. User 객체 생성 및 인증 정보 설정
-            User user = new User();
-            user.setEmail(username);
-            user.setPassword("temppassword");
-            user.setRole(Role.valueOf(role.trim()));
+            User user = userOptional.get();
 
             // 7. UserDetails에 회원 정보 객체 담기
             CustomUserDetails customUserDetails = new CustomUserDetails(user);
@@ -90,7 +90,7 @@ public class JwtFilter extends OncePerRequestFilter {
             
             // 9. 세션에 사용자 등록
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            System.out.println("authentication success: " + username);
+            System.out.println("authentication success: " + email);
 
         } catch (Exception e) {
             System.out.println("JWT processing error: " + e.getMessage());

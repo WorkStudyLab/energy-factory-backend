@@ -13,6 +13,8 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,16 +26,41 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
+        // JWT 인증 스키마 정의
+        SecurityScheme securityScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .in(SecurityScheme.In.HEADER)
+                .name("Authorization")
+                .description("JWT 토큰을 입력하세요 (Bearer 접두사 없이)");
+
+        // 보안 요구사항 정의
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("bearerAuth");
+
         return new OpenAPI()
                 .info(new Info()
                         .title("Energy Factory API")
-                        .description("백엔드 API 문서")
+                        .description("백엔드 API 문서\n\n" +
+                                "## 인증 방법\n" +
+                                "1. `/api/auth/login`으로 로그인하여 JWT 토큰을 받습니다.\n" +
+                                "2. 우측 상단의 'Authorize' 버튼을 클릭합니다.\n" +
+                                "3. `accessToken` 값을 입력합니다 (Bearer 접두사 없이).\n" +
+                                "4. 인증이 필요한 API를 호출할 수 있습니다.\n\n" +
+                                "## 주요 기능\n" +
+                                "- **상품 관리**: 상품 조회, 검색, 필터링\n" +
+                                "- **장바구니**: 로그인 후 이용 가능 (디바이스 간 동기화)\n" +
+                                "- **주문**: 직접 주문 또는 장바구니 기반 주문\n" +
+                                "- **사용자 관리**: 회원가입, 로그인, 프로필 관리")
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("Energy Factory Team")
                                 .email("contact@energyfactory.com")))
+                .addSecurityItem(securityRequirement)
                 .paths(customPaths())
                 .components(new Components()
+                        .addSecuritySchemes("bearerAuth", securityScheme)
                         .addSchemas("LoginRequest", createLoginRequestSchema())
                         .addSchemas("LoginResponse", createLoginResponseSchema())
                         .addSchemas("ApiResponse", createApiResponseSchema()));

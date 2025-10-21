@@ -174,3 +174,33 @@ ALTER TABLE product_tags
   ADD CONSTRAINT FK_tags_TO_product_tags
     FOREIGN KEY (tag_id)
     REFERENCES tags (id);
+
+CREATE TABLE cart_items
+(
+  id         BIGINT    NOT NULL COMMENT '장바구니 아이템 ID',
+  user_id    BIGINT    NOT NULL COMMENT '사용자 ID',
+  product_id BIGINT    NOT NULL COMMENT '상품 ID',
+  variant_id BIGINT    NOT NULL COMMENT '상품 변형 ID',
+  quantity   INT       NOT NULL COMMENT '수량',
+  created_at TIMESTAMP NOT NULL COMMENT '생성일',
+  updated_at TIMESTAMP NULL     COMMENT '수정일',
+  PRIMARY KEY (id)
+) COMMENT '장바구니';
+
+ALTER TABLE cart_items
+  ADD CONSTRAINT UQ_user_variant UNIQUE (user_id, variant_id);
+
+ALTER TABLE cart_items
+  ADD CONSTRAINT FK_user_TO_cart_items
+    FOREIGN KEY (user_id)
+    REFERENCES user (id);
+
+ALTER TABLE cart_items
+  ADD CONSTRAINT FK_product_TO_cart_items
+    FOREIGN KEY (product_id)
+    REFERENCES product (id);
+
+ALTER TABLE cart_items
+  ADD CONSTRAINT FK_variant_TO_cart_items
+    FOREIGN KEY (variant_id)
+    REFERENCES product_variant (id);
