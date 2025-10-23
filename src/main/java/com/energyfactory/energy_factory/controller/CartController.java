@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 /**
  * 장바구니 관리 컨트롤러
@@ -30,7 +29,11 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    @Operation(summary = "장바구니 조회", description = "로그인한 사용자의 장바구니 목록과 총 금액을 조회합니다")
+    @Operation(
+            summary = "장바구니 조회",
+            description = "로그인한 사용자의 장바구니 목록과 총 금액을 조회합니다. " +
+                    "장바구니에 담긴 모든 상품 정보와 각 아이템의 수량, 가격 정보를 반환합니다."
+    )
     public ResponseEntity<ApiResponse<CartListResponseDto>> getCart(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -40,7 +43,11 @@ public class CartController {
     }
 
     @PostMapping
-    @Operation(summary = "장바구니 추가", description = "상품을 장바구니에 추가합니다. 이미 담긴 상품이면 수량이 증가합니다")
+    @Operation(
+            summary = "장바구니 추가",
+            description = "상품을 장바구니에 추가합니다. 이미 장바구니에 동일한 상품(상품 ID + 변형 ID 조합)이 있으면 수량만 증가합니다. " +
+                    "새로운 상품인 경우 장바구니에 새 아이템으로 추가됩니다."
+    )
     public ResponseEntity<ApiResponse<CartItemResponseDto>> addToCart(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody CartItemAddRequestDto request
@@ -52,7 +59,12 @@ public class CartController {
     }
 
     @PatchMapping("/{cartItemId}")
-    @Operation(summary = "장바구니 수량 변경", description = "장바구니 아이템의 수량을 변경합니다")
+    @Operation(
+            summary = "장바구니 수량 변경",
+            description = "장바구니에 담긴 특정 아이템의 수량을 변경합니다. " +
+                    "요청한 사용자의 장바구니 아이템인지 확인 후 수량을 업데이트합니다. " +
+                    "수량은 1~999 사이의 값이어야 합니다."
+    )
     public ResponseEntity<ApiResponse<CartItemResponseDto>> updateCartItemQuantity(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long cartItemId,
@@ -64,7 +76,12 @@ public class CartController {
     }
 
     @DeleteMapping("/{cartItemId}")
-    @Operation(summary = "장바구니 아이템 삭제", description = "장바구니에서 특정 아이템을 삭제합니다")
+    @Operation(
+            summary = "장바구니 아이템 삭제",
+            description = "장바구니에서 특정 아이템 1개를 삭제합니다. " +
+                    "Path 파라미터로 전달된 장바구니 아이템 ID에 해당하는 아이템을 삭제합니다. " +
+                    "요청한 사용자의 장바구니 아이템인지 확인 후 삭제합니다."
+    )
     public ResponseEntity<ApiResponse<Void>> deleteCartItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long cartItemId
@@ -75,7 +92,11 @@ public class CartController {
     }
 
     @DeleteMapping
-    @Operation(summary = "장바구니 전체 삭제", description = "장바구니의 모든 아이템을 삭제합니다")
+    @Operation(
+            summary = "장바구니 전체 삭제",
+            description = "로그인한 사용자의 장바구니에 담긴 모든 아이템을 한번에 삭제합니다. " +
+                    "이 작업은 되돌릴 수 없으므로 주의가 필요합니다."
+    )
     public ResponseEntity<ApiResponse<Void>> clearCart(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -85,13 +106,18 @@ public class CartController {
     }
 
     @DeleteMapping("/selected")
-    @Operation(summary = "장바구니 선택 삭제", description = "선택한 장바구니 아이템들을 삭제합니다")
+    @Operation(
+            summary = "장바구니 선택 삭제",
+            description = "선택한 여러 장바구니 아이템들을 한번에 삭제합니다. " +
+                    "Request Body에 삭제할 장바구니 아이템 ID 목록을 배열로 전달합니다. " +
+                    "요청 예시: {\"cartItemIds\": [1, 2, 3, 4, 5]}"
+    )
     public ResponseEntity<ApiResponse<Void>> deleteSelectedCartItems(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody List<Long> cartItemIds
+            @Valid @RequestBody CartItemDeleteRequestDto request
     ) {
         Long userId = userDetails.getUser().getId();
-        cartService.deleteSelectedCartItems(userId, cartItemIds);
+        cartService.deleteSelectedCartItems(userId, request.getCartItemIds());
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
     }
 }
