@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 인증 불필요 (공개)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/signup").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/tags/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()

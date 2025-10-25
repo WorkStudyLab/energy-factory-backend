@@ -36,6 +36,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        e.printStackTrace();  // 에러 스택 트레이스 출력
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.of(ResultCode.INTERNAL_SERVER_ERROR, null));
