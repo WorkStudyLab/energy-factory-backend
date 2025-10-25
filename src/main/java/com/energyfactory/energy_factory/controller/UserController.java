@@ -4,7 +4,6 @@ import com.energyfactory.energy_factory.dto.ApiResponse;
 import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
-import com.energyfactory.energy_factory.dto.UserUpdateRequestDto;
 import com.energyfactory.energy_factory.service.UserService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 
@@ -23,7 +22,7 @@ import jakarta.validation.Valid;
 
 /**
  * 사용자 관리 컨트롤러
- * 회원가입, 사용자 정보 조회/수정, 회원 탈퇴 등 사용자 관리 기능을 제공
+ * 회원가입, 사용자 정보 조회, 비밀번호 변경, 회원 탈퇴 기능을 제공
  */
 @RestController
 @RequestMapping("/api/users")
@@ -47,22 +46,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> getUser(@PathVariable Long id) {
         UserResponseDto user = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
-    }
-
-    @GetMapping("/email/{email}")
-    @Operation(summary = "이메일로 사용자 조회")
-    public ResponseEntity<ApiResponse<UserResponseDto>> getUserByEmail(@PathVariable String email) {
-        UserResponseDto user = userService.getUserByEmail(email);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "사용자 정보 수정")
-    public ResponseEntity<ApiResponse<UserResponseDto>> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UserUpdateRequestDto updateRequestDto) {
-        UserResponseDto updatedUser = userService.updateUser(id, updateRequestDto);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, updatedUser));
     }
 
     @PutMapping("/{id}/password")

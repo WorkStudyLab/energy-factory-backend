@@ -3,7 +3,6 @@ package com.energyfactory.energy_factory.service;
 import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
-import com.energyfactory.energy_factory.dto.UserUpdateRequestDto;
 import com.energyfactory.energy_factory.entity.User;
 import com.energyfactory.energy_factory.exception.BusinessException;
 import com.energyfactory.energy_factory.repository.UserRepository;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 사용자 비즈니스 로직 서비스
- * 회원가입, 로그인, 사용자 정보 관리 기능을 제공
+ * 회원가입, 사용자 정보 조회, 비밀번호 변경, 회원 탈퇴 기능을 제공
  */
 @Service
 @RequiredArgsConstructor
@@ -65,56 +64,10 @@ public class UserService {
     public UserResponseDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-        
+
         return convertToUserResponseDto(user);
     }
-    
-    /**
-     * 이메일로 사용자 조회
-     */
-    public UserResponseDto getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-        
-        return convertToUserResponseDto(user);
-    }
-    
-    /**
-     * 사용자 정보 수정
-     */
-    @Transactional
-    public UserResponseDto updateUser(Long id, UserUpdateRequestDto updateRequestDto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-        
-        // 다른 사용자가 동일한 이메일을 사용하는지 체크
-        if (!user.getEmail().equals(updateRequestDto.getEmail()) && 
-            userRepository.existsByEmail(updateRequestDto.getEmail())) {
-            throw new BusinessException(ResultCode.DUPLICATE_EMAIL);
-        }
-        
-        // 다른 사용자가 동일한 전화번호를 사용하는지 체크
-        if (!user.getPhoneNumber().equals(updateRequestDto.getPhoneNumber()) && 
-            userRepository.existsByPhoneNumber(updateRequestDto.getPhoneNumber())) {
-            throw new BusinessException(ResultCode.DUPLICATE_PHONE_NUMBER);
-        }
-        
-        User updatedUser = User.builder()
-                .id(user.getId())
-                .email(updateRequestDto.getEmail())
-                .name(updateRequestDto.getName())
-                .password(user.getPassword()) // 비밀번호는 별도 API로 변경
-                .phoneNumber(updateRequestDto.getPhoneNumber())
-                .provider(user.getProvider())
-                .providerId(user.getProviderId())
-                .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .build();
-                
-        userRepository.save(updatedUser);
-        return convertToUserResponseDto(updatedUser);
-    }
-    
+
     /**
      * 비밀번호 변경
      */
