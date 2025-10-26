@@ -48,6 +48,13 @@ public enum ResultCode {
     CART_ITEM_ALREADY_EXISTS(HttpStatus.CONFLICT, "40600002", "이미 장바구니에 담긴 상품입니다."),
     CART_ITEM_ACCESS_DENIED(HttpStatus.FORBIDDEN, "40600003", "해당 장바구니 아이템에 접근할 권한이 없습니다."),
 
+    // Password Reset 도메인 에러 코드
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "40700001", "인증 코드가 만료되었습니다."),
+    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "40700002", "인증 코드가 일치하지 않습니다."),
+    INVALID_RESET_TOKEN(HttpStatus.BAD_REQUEST, "40700003", "유효하지 않거나 만료된 리셋 토큰입니다."),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "42900001", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "50000001", "이메일 발송에 실패했습니다."),
+
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "50000000", "서버에 오류가 발생했습니다.");
 
     private final HttpStatus status;

@@ -75,25 +75,16 @@ public class UserService {
     public void changePassword(Long id, String currentPassword, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-        
+
         // 현재 비밀번호 확인
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new BusinessException(ResultCode.INVALID_PASSWORD);
         }
-        
-        User updatedUser = User.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .password(passwordEncoder.encode(newPassword))
-                .phoneNumber(user.getPhoneNumber())
-                .provider(user.getProvider())
-                .providerId(user.getProviderId())
-                .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .build();
-                
-        userRepository.save(updatedUser);
+
+        // 기존 User 객체의 password만 변경
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
     }
     
     /**
@@ -103,8 +94,22 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
-        
+
         userRepository.delete(user);
+    }
+
+    /**
+     * 이메일로 비밀번호 재설정 (비밀번호 찾기)
+     */
+    @Transactional
+    public void resetPasswordByEmail(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        // 기존 User 객체의 password만 변경
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
     }
     
     /**
