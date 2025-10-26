@@ -111,6 +111,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
+                "https://energy-factory.kr",  // 커스텀 도메인
+                "https://www.energy-factory.kr",  // www 포함
                 "https://d1o0ytu060swr1.cloudfront.net",  // CloudFront 도메인
                 "http://localhost:3000",
                 "http://localhost:5173"
