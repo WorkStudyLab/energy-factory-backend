@@ -132,9 +132,10 @@ public class SwaggerConfig {
         Schema<?> dataSchema = new Schema<>();
         dataSchema.setType("object");
         Map<String, Schema> dataProperties = new HashMap<>();
-        dataProperties.put("accessToken", new Schema<>().type("string").example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."));
-        dataProperties.put("refreshToken", new Schema<>().type("string").example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."));
-        dataProperties.put("tokenType", new Schema<>().type("string").example("Bearer"));
+        dataProperties.put("userId", new Schema<>().type("integer").format("int64").example(1).description("사용자 ID"));
+        dataProperties.put("accessToken", new Schema<>().type("string").example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...").description("액세스 토큰"));
+        dataProperties.put("refreshToken", new Schema<>().type("string").example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...").description("리프레시 토큰"));
+        dataProperties.put("tokenType", new Schema<>().type("string").example("Bearer").description("토큰 타입"));
         dataSchema.setProperties(dataProperties);
         
         properties.put("data", dataSchema);

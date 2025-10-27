@@ -118,8 +118,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
             String username = customUserDetails.getUsername();
             String role = authentication.getAuthorities().iterator().next().getAuthority();
+            Long userId = customUserDetails.getUser().getId();
 
             System.out.println("Username: " + username);
+            System.out.println("User ID: " + userId);
             System.out.println("Role: " + role);
 
             // 토큰 생성
@@ -140,6 +142,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
             // 응답 바디에도 토큰 포함 (개발 편의성 - Swagger 등에서 확인 가능)
             LoginResponseDto loginResponse = LoginResponseDto.builder()
+                    .userId(userId)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")

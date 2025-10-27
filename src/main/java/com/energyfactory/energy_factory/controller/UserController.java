@@ -54,14 +54,6 @@ public class UserController {
                 mediaType = "application/json",
                 schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserResponseDto.class)
             )
-        ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "인증 실패"
-        ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "사용자를 찾을 수 없음"
         )
     })
     public ResponseEntity<ApiResponse<UserResponseDto>> getUser(@PathVariable Long id) {
