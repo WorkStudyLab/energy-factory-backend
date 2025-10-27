@@ -55,6 +55,13 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/categories")
+    @Operation(summary = "카테고리 목록 조회", description = "DB에 존재하는 모든 카테고리 목록을 반환 (중복 제거, 정렬)")
+    public ResponseEntity<ApiResponse<java.util.List<String>>> getCategories() {
+        java.util.List<String> categories = productService.getAllCategories();
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, categories));
+    }
+
     @GetMapping("/categories/{category}")
     @Operation(summary = "카테고리별 상품 조회")
     public ResponseEntity<ApiResponse<ProductListResponseDto>> getProductsByCategory(
@@ -66,24 +73,13 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "상품 검색")
+    @Operation(summary = "상품 검색 (상품명 기반)")
     public ResponseEntity<ApiResponse<ProductListResponseDto>> searchProducts(
             @RequestParam String q,
             @RequestParam(required = false) String category,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         ProductListResponseDto response = productService.searchProducts(q, category, pageable);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, response));
-    }
-
-    @GetMapping("/unified-search")
-    @Operation(summary = "통합 검색 (상품명, 태그명, 영양소명, 설명)")
-    public ResponseEntity<ApiResponse<ProductListResponseDto>> unifiedSearch(
-            @RequestParam String q,
-            @RequestParam(required = false) String category,
-            @PageableDefault(size = 20) Pageable pageable
-    ) {
-        ProductListResponseDto response = productService.unifiedSearch(q, category, pageable);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, response));
     }
 }

@@ -68,7 +68,7 @@ public class ProductService {
     }
 
     /**
-     * 상품 검색
+     * 상품 검색 (상품명 기반)
      */
     public ProductListResponseDto searchProducts(String keyword, String category, Pageable pageable) {
         Page<Product> productPage;
@@ -87,20 +87,11 @@ public class ProductService {
     }
 
     /**
-     * 통합 검색: 상품명, 태그명, 영양소명, 설명 검색
+     * 모든 카테고리 목록 조회 (중복 제거, 정렬)
+     * DB에 존재하는 실제 카테고리만 반환
      */
-    public ProductListResponseDto unifiedSearch(String keyword, String category, Pageable pageable) {
-        Page<Product> productPage;
-
-        if (category != null && !category.trim().isEmpty()) {
-            // 카테고리 + 통합 검색
-            productPage = productRepository.searchByKeywordAndCategory(keyword, category, pageable);
-        } else {
-            // 통합 검색만
-            productPage = productRepository.searchByKeyword(keyword, pageable);
-        }
-
-        return convertPageToListDto(productPage);
+    public List<String> getAllCategories() {
+        return productRepository.findAllCategories();
     }
 
     /**

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 상품 데이터 접근 레포지토리
@@ -28,25 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByNameContainingIgnoreCase(String keyword, Pageable pageable);
     
     /**
-     * 가격 범위 조회
-     */
-    Page<Product> findByPriceBetween(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
-    
-    /**
-     * 판매 상태별 조회
-     */
-    Page<Product> findByStatus(String status, Pageable pageable);
-    
-    /**
      * 카테고리 + 키워드 복합 검색
      */
     Page<Product> findByCategoryAndNameContainingIgnoreCase(String category, String keyword, Pageable pageable);
-    
-    /**
-     * 카테고리 + 가격 범위 조회
-     */
-    Page<Product> findByCategoryAndPriceBetween(String category, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
-    
+
     /**
      * 복합 조건 검색 (카테고리, 키워드, 가격범위, 상태)
      */
@@ -77,34 +63,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Page<Product> findByStockQuantityGreaterThan(Long minStock, Pageable pageable);
 
     /**
-     * 통합 검색: 상품명, 태그명, 영양소명 검색
-     * 하나의 키워드로 여러 필드를 동시에 검색
+     * 모든 카테고리 목록 조회 (중복 제거)
      */
-    @Query("SELECT DISTINCT p FROM Product p " +
-           "LEFT JOIN p.productTags pt " +
-           "LEFT JOIN pt.tag t " +
-           "LEFT JOIN p.productNutrients pn " +
-           "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(pn.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Product> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
-    
-    /**
-     * 통합 검색 + 카테고리 필터
-     */
-    @Query("SELECT DISTINCT p FROM Product p " +
-           "LEFT JOIN p.productTags pt " +
-           "LEFT JOIN pt.tag t " +
-           "LEFT JOIN p.productNutrients pn " +
-           "WHERE (:category IS NULL OR p.category = :category) " +
-           "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(pn.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Product> searchByKeywordAndCategory(
-            @Param("keyword") String keyword,
-            @Param("category") String category,
-            Pageable pageable
-    );
+    @Query("SELECT DISTINCT p.category FROM Product p ORDER BY p.category")
+    List<String> findAllCategories();
 }
