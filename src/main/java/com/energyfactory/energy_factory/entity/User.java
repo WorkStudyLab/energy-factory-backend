@@ -37,6 +37,9 @@ public class User {
     @Column(name = "phone_number", unique = true, columnDefinition = "varchar(20) COMMENT '전화번호'")
     private String phoneNumber;
 
+    @Column(name = "birth_date", columnDefinition = "DATE COMMENT '생년월일'")
+    private java.time.LocalDate birthDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(50) COMMENT '소셜 로그인 제공자'")
     private Provider provider;
@@ -61,9 +64,6 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserAddress> addresses = new ArrayList<>();
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private UserProfile userProfile;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Review> reviews = new ArrayList<>();

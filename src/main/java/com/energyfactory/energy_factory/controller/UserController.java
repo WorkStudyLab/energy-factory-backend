@@ -42,7 +42,28 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "사용자 정보 조회")
+    @Operation(
+        summary = "사용자 정보 조회 (마이페이지)",
+        description = "사용자 ID로 마이페이지에 필요한 정보를 조회합니다. 기본 배송지 주소가 자동으로 포함됩니다."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "사용자 정보 조회 성공",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = UserResponseDto.class)
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "인증 실패"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "사용자를 찾을 수 없음"
+        )
+    })
     public ResponseEntity<ApiResponse<UserResponseDto>> getUser(@PathVariable Long id) {
         UserResponseDto user = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));

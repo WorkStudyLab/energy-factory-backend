@@ -4,8 +4,10 @@ import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
 import com.energyfactory.energy_factory.entity.User;
+import com.energyfactory.energy_factory.entity.UserAddress;
 import com.energyfactory.energy_factory.exception.BusinessException;
 import com.energyfactory.energy_factory.repository.UserRepository;
+import com.energyfactory.energy_factory.repository.UserAddressRepository;
 import com.energyfactory.energy_factory.utils.enums.Provider;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import com.energyfactory.energy_factory.utils.enums.Role;
@@ -25,6 +27,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserAddressRepository userAddressRepository;
 
     /**
      * 회원가입
@@ -113,18 +116,29 @@ public class UserService {
     }
     
     /**
-     * User 엔티티를 UserResponseDto로 변환
+     * User 엔티티를 UserResponseDto로 변환 (마이페이지용)
      */
     private UserResponseDto convertToUserResponseDto(User user) {
+        // 기본 배송지 조회
+        String defaultAddress = userAddressRepository.findByUserAndIsDefaultTrue(user)
+                .map(address -> {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(address.getAddressLine1());
+                    if (address.getAddressLine2() != null && !address.getAddressLine2().isEmpty()) {
+                        sb.append(" ").append(address.getAddressLine2());
+                    }
+                    return sb.toString();
+                })
+                .orElse(""); // 기본 배송지가 없으면 빈 문자열
+
         return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
                 .name(user.getName())
-                .phoneNumber(user.getPhoneNumber())
-                .provider(user.getProvider().name())
-                .role(user.getRole().name())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
+                .email(user.getEmail())
+                .phone(user.getPhoneNumber())
+                .birthDate(user.getBirthDate())
+                .authProvider(user.getProvider().name().toLowerCase())
+                .memberSince(user.getCreatedAt().toLocalDate())
+                .address(defaultAddress)
                 .build();
     }
 }
