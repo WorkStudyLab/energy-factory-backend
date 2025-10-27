@@ -40,6 +40,9 @@ public class User {
     @Column(name = "birth_date", columnDefinition = "DATE COMMENT '생년월일'")
     private java.time.LocalDate birthDate;
 
+    @Column(columnDefinition = "TEXT COMMENT '기본 배송지 주소'")
+    private String address;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(50) COMMENT '소셜 로그인 제공자'")
     private Provider provider;

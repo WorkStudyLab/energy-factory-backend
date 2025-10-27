@@ -4,10 +4,8 @@ import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
 import com.energyfactory.energy_factory.entity.User;
-import com.energyfactory.energy_factory.entity.UserAddress;
 import com.energyfactory.energy_factory.exception.BusinessException;
 import com.energyfactory.energy_factory.repository.UserRepository;
-import com.energyfactory.energy_factory.repository.UserAddressRepository;
 import com.energyfactory.energy_factory.utils.enums.Provider;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import com.energyfactory.energy_factory.utils.enums.Role;
@@ -27,7 +25,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserAddressRepository userAddressRepository;
 
     /**
      * 회원가입
@@ -38,18 +35,20 @@ public class UserService {
         if (userRepository.existsByEmail(signupRequestDto.getEmail())) {
             throw new BusinessException(ResultCode.DUPLICATE_EMAIL);
         }
-        
+
         // 전화번호 중복 체크
         if (userRepository.existsByPhoneNumber(signupRequestDto.getPhoneNumber())) {
             throw new BusinessException(ResultCode.DUPLICATE_PHONE_NUMBER);
         }
-        
+
         User user = User.builder()
                 .email(signupRequestDto.getEmail())
                 .name(signupRequestDto.getName())
                 .password(passwordEncoder.encode(signupRequestDto.getPassword()))
                 .role(Role.USER)
                 .phoneNumber(signupRequestDto.getPhoneNumber())
+                .birthDate(signupRequestDto.getBirthDate())
+                .address(signupRequestDto.getAddress())
                 .provider(Provider.LOCAL)
                 .build();
 
@@ -119,18 +118,6 @@ public class UserService {
      * User 엔티티를 UserResponseDto로 변환 (마이페이지용)
      */
     private UserResponseDto convertToUserResponseDto(User user) {
-        // 기본 배송지 조회
-        String defaultAddress = userAddressRepository.findByUserAndIsDefaultTrue(user)
-                .map(address -> {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(address.getAddressLine1());
-                    if (address.getAddressLine2() != null && !address.getAddressLine2().isEmpty()) {
-                        sb.append(" ").append(address.getAddressLine2());
-                    }
-                    return sb.toString();
-                })
-                .orElse(""); // 기본 배송지가 없으면 빈 문자열
-
         return UserResponseDto.builder()
                 .name(user.getName())
                 .email(user.getEmail())
@@ -138,7 +125,7 @@ public class UserService {
                 .birthDate(user.getBirthDate())
                 .authProvider(user.getProvider().name().toLowerCase())
                 .memberSince(user.getCreatedAt().toLocalDate())
-                .address(defaultAddress)
+                .address(user.getAddress() != null ? user.getAddress() : "")
                 .build();
     }
 }
