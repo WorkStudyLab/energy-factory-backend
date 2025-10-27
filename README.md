@@ -1,6 +1,7 @@
 # Energy Factory Backend
 
-건강관리 쇼핑몰의 백엔드 REST API 서버입니다.
+건강관리 쇼핑몰의 백엔드 REST API 서버입니다.  
+서비스 주소 : https://energy-factory.kr
 
 ## 프로젝트 소개
 
