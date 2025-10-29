@@ -82,7 +82,7 @@ public class OrderService {
             }
 
             // 가격 검증 (클라이언트에서 전달한 가격과 실제 Variant 가격 비교)
-            if (!variant.getPrice().equals(itemDto.getPrice())) {
+            if (variant.getPrice().compareTo(itemDto.getPrice()) != 0) {
                 throw new BusinessException(ResultCode.INVALID_PRICE);
             }
 
@@ -331,7 +331,7 @@ public class OrderService {
             Product product = cartItem.getProduct();
             Integer quantity = cartItem.getQuantity();
 
-            // 재고 확인
+            // 재고 확인 (차감하지 않고 확인만)
             if (!variant.hasStock(quantity.longValue())) {
                 throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
             }
@@ -343,8 +343,7 @@ public class OrderService {
             // 총액 누적
             totalPrice = totalPrice.add(orderItem.getTotalPrice());
 
-            // 재고 차감
-            variant.decreaseStock(quantity.longValue());
+            // 재고 차감은 결제 완료 후에 수행
         }
 
         // 5. 총액 설정 및 주문 저장
@@ -376,8 +375,39 @@ public class OrderService {
         }
         orderItemRepository.saveAll(savedOrder.getOrderItems());
 
-        // 7. 주문 성공 시 장바구니에서 삭제
-        cartItemRepository.deleteAll(cartItems);
+        // 7. 장바구니 삭제는 결제 완료 후에 수행
+
+        return convertToResponseDto(savedOrder);
+    }
+
+    /**
+     * 테스트용 주문 생성 (결제 테스트용)
+     * 실제 상품이나 배송지 없이도 주문을 생성합니다.
+     */
+    @Transactional
+    public OrderResponseDto createTestOrder(Long userId, Double amount, String orderName) {
+        // 1. 사용자 조회 (없으면 기본 사용자 생성)
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            // 테스트용 사용자가 없으면 간단히 처리
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 2. 테스트 주문 생성
+        Order order = Order.builder()
+                .user(user)
+                .orderNumber(Order.generateOrderNumber())
+                .recipientName("테스트 수령인")
+                .phoneNumber("010-0000-0000")
+                .postalCode("12345")
+                .addressLine1("테스트 주소")
+                .addressLine2("상세주소")
+                .totalPrice(BigDecimal.valueOf(amount))
+                .status(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
+
+        Order savedOrder = orderRepository.save(order);
 
         return convertToResponseDto(savedOrder);
     }

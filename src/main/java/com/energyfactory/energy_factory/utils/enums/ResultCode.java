@@ -38,6 +38,8 @@ public enum ResultCode {
 
     // Payment 도메인 에러 코드
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "40400001", "잘못된 요청입니다."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "40400002", "결제 처리에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_REQUEST, "40400003", "결제 취소에 실패했습니다."),
 
     // UserProfile 도메인 에러 코드
     DUPLICATE_REQUEST(HttpStatus.CONFLICT, "40500001", "이미 프로필이 존재합니다."),
