@@ -99,4 +99,18 @@ public class OrderController {
         OrderResponseDto order = orderService.createOrderFromCart(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
     }
+
+    @PostMapping("/test/create")
+    @Operation(
+        summary = "테스트용 주문 생성 (인증 불필요)",
+        description = "결제 테스트를 위한 간단한 주문을 생성합니다. 실제 상품/배송지 없이도 동작합니다."
+    )
+    public ResponseEntity<ApiResponse<OrderResponseDto>> createTestOrder(
+            @RequestParam(defaultValue = "3") Long userId,
+            @RequestParam(defaultValue = "50000") Double amount,
+            @RequestParam(defaultValue = "테스트 상품") String orderName
+    ) {
+        OrderResponseDto order = orderService.createTestOrder(userId, amount, orderName);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
+    }
 }

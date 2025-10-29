@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제 실패</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .error-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .error-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .error-row:last-child {
+            border-bottom: none;
+        }
+
+        .error-label {
+            color: #856404;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .error-value {
+            color: #333;
+            word-break: break-word;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .help-text {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">⚠️</div>
+        <h1>결제에 실패했습니다</h1>
+        <p>결제 처리 중 문제가 발생했습니다.<br>아래 내용을 확인해주세요.</p>
+
+        <div class="error-box">
+            <div class="error-row">
+                <span class="error-label">에러 코드</span>
+                <span class="error-value" id="error-code">-</span>
+            </div>
+            <div class="error-row">
+                <span class="error-label">에러 메시지</span>
+                <span class="error-value" id="error-message">-</span>
+            </div>
+            <div class="error-row">
+                <span class="error-label">주문 ID</span>
+                <span class="error-value" id="order-id">-</span>
+            </div>
+        </div>
+
+        <div class="help-text">
+            💡 <strong>자주 발생하는 실패 원인</strong><br>
+            • 카드 한도 초과<br>
+            • 잘못된 카드 정보 입력<br>
+            • 사용자가 결제를 취소함<br>
+            • 네트워크 연결 문제
+        </div>
+
+        <a href="/payment-widget.html" class="button">다시 시도하기</a>
+    </div>
+
+    <script>
+        // URL에서 쿼리 파라미터 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorCode = urlParams.get('code');
+        const errorMessage = urlParams.get('message');
+        const orderId = urlParams.get('orderId');
+
+        console.log('결제 실패 정보:', { errorCode, errorMessage, orderId });
+
+        // 화면에 정보 표시
+        document.getElementById('error-code').textContent = errorCode || '알 수 없음';
+        document.getElementById('error-message').textContent = decodeURIComponent(errorMessage || '결제에 실패했습니다.');
+        document.getElementById('order-id').textContent = orderId || '-';
+    </script>
+</body>
+</html>

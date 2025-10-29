@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth/password-reset")
 @Tag(name = "Password Reset", description = "비밀번호 재설정 관련 API")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "spring.mail.host")
 public class PasswordResetController {
 
     private final VerificationCodeService verificationCodeService;

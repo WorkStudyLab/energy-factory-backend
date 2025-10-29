@@ -62,6 +62,9 @@ public class ProductListResponseDto {
 
         @Schema(description = "할인율 (%)", example = "15")
         private Integer discount;
+
+        @Schema(description = "상품 옵션/변형 목록")
+        private List<ProductVariantDto> variants;
     }
 
     @Getter

@@ -35,8 +35,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     /**
      * 복합 조건 검색 (카테고리, 키워드, 가격범위, 상태)
+     * productVariants를 fetch join으로 함께 조회
      */
-    @Query("SELECT p FROM Product p WHERE " +
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN FETCH p.productVariants " +
+           "WHERE " +
            "(:category IS NULL OR p.category = :category) AND " +
            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +

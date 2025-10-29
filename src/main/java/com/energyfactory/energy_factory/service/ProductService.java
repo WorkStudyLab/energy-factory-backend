@@ -160,6 +160,9 @@ public class ProductService {
                 .map(productTag -> productTag.getTag().getName())
                 .collect(Collectors.toList());
 
+        // 상품 변형 리스트 생성
+        List<ProductVariantDto> variants = buildVariants(product);
+
         return ProductListResponseDto.ProductSummaryDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -175,6 +178,7 @@ public class ProductService {
                 .tags(tagNames)
                 .originalPrice(product.getOriginalPrice())
                 .discount(product.getDiscountRate())
+                .variants(variants)
                 .build();
     }
 

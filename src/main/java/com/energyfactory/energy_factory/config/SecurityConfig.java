@@ -70,6 +70,15 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
 
+                        // 토스페이먼츠 관련 (인증 불필요)
+                        .requestMatchers("/api/payments/toss/**").permitAll()
+
+                        // 테스트용 주문 생성 (인증 불필요)
+                        .requestMatchers("/api/orders/test/**").permitAll()
+
+                        // 정적 리소스 (HTML 테스트 페이지)
+                        .requestMatchers("/*.html", "/static/**", "/css/**", "/js/**", "/images/**").permitAll()
+
                         // Swagger 관련
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
 
