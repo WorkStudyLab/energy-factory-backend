@@ -107,6 +107,9 @@
     </div>
 
     <script>
+        // 현재 서버 URL 설정
+        const BASE_URL = window.location.origin;
+
         // 페이지 로드시 쿠키 확인하여 로그인 상태 체크
         window.onload = function() {
             // 쿠키에 accessToken이 있으면 로그인된 것으로 판단
@@ -117,12 +120,12 @@
         };
 
         function loginWithNaver() {
-            window.location.href = 'http://localhost:8080/oauth2/authorization/naver';
+            window.location.href = `${BASE_URL}/oauth2/authorization/naver`;
         }
 
         async function checkLoginStatus() {
             try {
-                const response = await fetch('http://localhost:8080/api/oauth2/user', {
+                const response = await fetch(`${BASE_URL}/api/oauth2/user`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
