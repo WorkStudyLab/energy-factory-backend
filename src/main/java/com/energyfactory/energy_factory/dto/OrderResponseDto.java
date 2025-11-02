@@ -118,10 +118,5 @@ public class OrderResponseDto {
         @Schema(description = "결제 완료 시각", example = "2024-01-01T10:05:00")
         private LocalDateTime paidAt;
 
-        @Schema(description = "생성일", example = "2024-01-01T10:00:00")
-        private LocalDateTime createdAt;
-
-        @Schema(description = "수정일", example = "2024-01-01T10:00:00")
-        private LocalDateTime updatedAt;
     }
 }
