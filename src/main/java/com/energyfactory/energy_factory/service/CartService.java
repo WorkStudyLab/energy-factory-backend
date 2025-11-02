@@ -216,8 +216,6 @@ public class CartService {
                 .nutrition(nutrition)
                 .weight(product.getWeight())
                 .weightUnit(product.getWeightUnit())
-                .createdAt(cartItem.getCreatedAt())
-                .updatedAt(cartItem.getUpdatedAt())
                 .build();
     }
 

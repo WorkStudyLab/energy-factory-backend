@@ -137,8 +137,6 @@ public class ProductService {
                 .weightUnit(product.getWeightUnit())
                 .averageRating(product.getAverageRating())
                 .reviewCount(product.getReviewCount())
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
                 .tags(tags)
                 .nutrition(nutrition)
                 .vitaminsAndMinerals(vitaminsAndMinerals)
