@@ -36,9 +36,6 @@ public class OrderCreateRequestDto {
     @Schema(description = "상세주소", example = "456호")
     private String addressLine2;
 
-    @NotBlank(message = "결제 수단은 필수입니다")
-    @Schema(description = "결제 수단", example = "CREDIT_CARD", required = true)
-    private String paymentMethod;
 
     @Valid
     @NotEmpty(message = "주문 상품은 최소 1개 이상이어야 합니다")

@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 
 /**
  * 토스페이먼츠 API 응답 DTO
- * 실제 토스페이먼츠 API 응답 구조에 맞춤
+ * 결제 승인/취소에 필요한 필수 필드만 포함
  */
 @Getter
 @Builder
@@ -20,23 +20,16 @@ import java.time.OffsetDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TossPaymentResponseDto {
 
+    // 필수 필드
     private String paymentKey;
     private String orderId;
-    private String orderName;
     private String method;
     private BigDecimal totalAmount;
-    private BigDecimal balanceAmount;
     private String status;
-    private OffsetDateTime requestedAt;
     private OffsetDateTime approvedAt;
-    private String transactionKey;
-    private String receiptUrl;
 
-    // 카드 정보
-    private Card card;
-
-    // 가상계좌 정보
-    private VirtualAccount virtualAccount;
+    // 간편결제 정보
+    private EasyPay easyPay;
 
     // 에러 정보
     private String code;
@@ -47,29 +40,9 @@ public class TossPaymentResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Card {
-        private String company;
-        private String number;
-        private String installmentPlanMonths;
-        private String approveNo;
-        private Boolean useCardPoint;
-        private String cardType;
-        private String ownerType;
-        private String acquireStatus;
-        private String receiptUrl;
-    }
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class VirtualAccount {
-        private String accountNumber;
-        private String bankCode;
-        private String customerName;
-        private OffsetDateTime dueDate;
-        private String refundStatus;
-        private Boolean expired;
+    public static class EasyPay {
+        private String provider;  // "토스페이", "카카오페이", "네이버페이" 등
+        private BigDecimal amount;
+        private BigDecimal discountAmount;
     }
 }

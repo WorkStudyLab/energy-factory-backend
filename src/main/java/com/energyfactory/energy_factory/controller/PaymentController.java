@@ -28,14 +28,6 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final TossPaymentsConfig tossPaymentsConfig;
 
-    @PostMapping
-    @Operation(summary = "결제 처리")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> processPayment(
-            @Valid @RequestBody PaymentCreateRequestDto requestDto
-    ) {
-        PaymentResponseDto payment = paymentService.processPayment(requestDto);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
-    }
 
     @GetMapping("/order/{orderId}")
     @Operation(summary = "주문별 결제 정보 조회")
@@ -52,16 +44,6 @@ public class PaymentController {
             @PathVariable Long id
     ) {
         PaymentResponseDto payment = paymentService.getPayment(id);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
-    }
-
-    @PostMapping("/{id}/refund")
-    @Operation(summary = "결제 환불")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> refundPayment(
-            @PathVariable Long id,
-            @RequestParam(required = false) String reason
-    ) {
-        PaymentResponseDto payment = paymentService.refundPayment(id, reason);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
     }
 
