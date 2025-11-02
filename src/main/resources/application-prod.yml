@@ -86,3 +86,10 @@ logging:
     root: INFO
     com.energyfactory.energy_factory: DEBUG
     org.springframework.security: DEBUG
+
+
+toss:
+  payments:
+    client-key: test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm
+    secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+    base-url: https://api.tosspayments.com

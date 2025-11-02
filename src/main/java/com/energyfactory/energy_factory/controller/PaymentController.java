@@ -67,19 +67,6 @@ public class PaymentController {
 
     // ==================== 토스페이먼츠 API ====================
 
-    @GetMapping("/toss/client-key")
-    @Operation(
-        summary = "토스페이먼츠 클라이언트 키 조회",
-        description = "프론트엔드에서 결제 위젯 초기화 시 사용할 클라이언트 키를 반환합니다."
-    )
-    public ResponseEntity<Map<String, String>> getTossClientKey() {
-        return ResponseEntity.ok(Map.of(
-            "clientKey", tossPaymentsConfig.getClientKey(),
-            "successUrl", tossPaymentsConfig.getSuccessUrl(),
-            "failUrl", tossPaymentsConfig.getFailUrl()
-        ));
-    }
-
     @PostMapping("/toss/confirm")
     @Operation(
         summary = "토스페이먼츠 결제 승인",
