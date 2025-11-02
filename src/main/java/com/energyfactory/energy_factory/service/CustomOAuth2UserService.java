@@ -49,12 +49,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         
         // 네이버에서 휴대폰 번호 가져오기
         String phoneNumber = null;
+
         if (oAuth2UserInfo instanceof NaverUserInfo) {
-            phoneNumber = ((NaverUserInfo) oAuth2UserInfo).getMobile();
-            // 네이버 휴대폰 번호 형식: "010-1234-5678" -> "01012345678" 변환
-            if (phoneNumber != null) {
-                phoneNumber = phoneNumber.replaceAll("-", "");
-            }
+            NaverUserInfo naverUserInfo = (NaverUserInfo) oAuth2UserInfo;
+            // 휴대폰 번호: "010-1234-5678" 그대로 저장 (대쉬 포함)
+            phoneNumber = naverUserInfo.getMobile();
         }
         
         // 1. Provider + ProviderId로 기존 사용자 확인
@@ -66,10 +65,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user = optionalUser.get();
             user.setName(name);
             user.setEmail(email);
+
             // 휴대폰 번호가 있으면 업데이트
             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                 user.setPhoneNumber(phoneNumber);
             }
+
             userRepository.save(user);
         } else {
             // 2. 같은 이메일로 가입된 사용자가 있는지 확인
@@ -103,7 +104,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .providerId(providerId)
                     .role(Role.USER)
                     .build();
-                
+
                 userRepository.save(user);
             }
         }

@@ -50,6 +50,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addTokenCookie(response, "refreshToken", refreshToken, refreshTokenExpiration.intValue()); // 7일
 
         // 프론트엔드로 리다이렉트 (토큰은 쿠키에 있음)
+        // 추가 정보 필요 여부는 프론트엔드에서 API 호출로 확인
         getRedirectStrategy().sendRedirect(request, response, frontendRedirectUrl);
     }
 

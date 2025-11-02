@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추가 정보 입력</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .error-message {
+            background: #fee;
+            border-left: 4px solid #e74c3c;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #c0392b;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efd;
+            border-left: 4px solid #27ae60;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #1e8449;
+            font-size: 14px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 환영합니다!</h1>
+        <p class="subtitle">서비스 이용을 위해 추가 정보를 입력해주세요</p>
+
+        <div class="info-box">
+            <p>✨ 네이버에서 제공하지 않은 정보만 입력하시면 됩니다.</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="additionalInfoForm">
+            <div class="form-group">
+                <label for="birthDate">
+                    생년월일 <span class="required">*</span>
+                </label>
+                <input
+                    type="date"
+                    id="birthDate"
+                    name="birthDate"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="address">
+                    배송지 주소 <span class="required">*</span>
+                </label>
+                <textarea
+                    id="address"
+                    name="address"
+                    placeholder="서울시 강남구 테헤란로 123, 4층&#10;(우편번호: 12345)"
+                    required
+                ></textarea>
+                <p class="helper-text">우편번호와 상세주소를 포함하여 입력해주세요</p>
+            </div>
+
+            <button type="submit" class="button">정보 저장하고 시작하기</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">저장 중...</p>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+
+        // 페이지 로드 시 사용자 정보 확인
+        window.onload = async function() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/users/profile`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+
+                    // 이미 정보가 있으면 미리 채우기
+                    if (user.data.birthDate) {
+                        document.getElementById('birthDate').value = user.data.birthDate;
+                    }
+
+                    if (user.data.address) {
+                        document.getElementById('address').value = user.data.address;
+                    }
+                }
+            } catch (error) {
+                console.error('사용자 정보 조회 실패:', error);
+            }
+        };
+
+        // 폼 제출
+        document.getElementById('additionalInfoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const birthDate = document.getElementById('birthDate').value;
+            const address = document.getElementById('address').value;
+
+            // 필수 항목 확인
+            if (!birthDate) {
+                showError('생년월일은 필수 입력 항목입니다.');
+                return;
+            }
+
+            if (!address) {
+                showError('배송지 주소는 필수 입력 항목입니다.');
+                return;
+            }
+
+            // 로딩 표시
+            document.getElementById('additionalInfoForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/users/additional-info`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        birthDate: birthDate,
+                        address: address
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('정보가 저장되었습니다! 메인 페이지로 이동합니다...');
+                    setTimeout(() => {
+                        window.location.href = `${BASE_URL}/oauth2-test.html`;
+                    }, 1500);
+                } else {
+                    document.getElementById('additionalInfoForm').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    showError(data.message || '정보 저장에 실패했습니다.');
+                }
+            } catch (error) {
+                document.getElementById('additionalInfoForm').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                showError('서버와 통신 중 오류가 발생했습니다.');
+                console.error('Error:', error);
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -55,7 +55,7 @@ jwt:
 # OAuth2 리다이렉트 URL 설정
 app:
   oauth2:
-    redirect-url: http://localhost:8080/oauth2-test.html
+    redirect-url: http://localhost:8080/complete-profile.html
   cookie:
     secure: false
   mail:

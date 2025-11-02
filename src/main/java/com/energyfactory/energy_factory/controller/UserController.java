@@ -3,6 +3,7 @@ package com.energyfactory.energy_factory.controller;
 import com.energyfactory.energy_factory.dto.ApiResponse;
 import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
+import com.energyfactory.energy_factory.dto.UserAdditionalInfoRequestDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
 import com.energyfactory.energy_factory.service.UserService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -76,6 +78,30 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
+    }
+
+    @PutMapping("/additional-info")
+    @Operation(
+        summary = "소셜 로그인 후 추가 정보 업데이트",
+        description = "네이버 소셜 로그인 후 부족한 정보(전화번호, 생년월일, 배송지)를 추가로 입력받습니다."
+    )
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateAdditionalInfo(
+            Authentication authentication,
+            @Valid @RequestBody UserAdditionalInfoRequestDto requestDto) {
+        String email = authentication.getName();
+        UserResponseDto user = userService.updateAdditionalInfo(email, requestDto);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
+    }
+
+    @GetMapping("/profile")
+    @Operation(
+        summary = "현재 로그인한 사용자 정보 조회",
+        description = "JWT 토큰으로 인증된 사용자의 정보를 조회합니다."
+    )
+    public ResponseEntity<ApiResponse<UserResponseDto>> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        UserResponseDto user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
     }
 
 }

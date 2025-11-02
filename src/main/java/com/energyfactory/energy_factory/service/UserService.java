@@ -2,6 +2,7 @@ package com.energyfactory.energy_factory.service;
 
 import com.energyfactory.energy_factory.dto.SignupRequestDto;
 import com.energyfactory.energy_factory.dto.SignupResponseDto;
+import com.energyfactory.energy_factory.dto.UserAdditionalInfoRequestDto;
 import com.energyfactory.energy_factory.dto.UserResponseDto;
 import com.energyfactory.energy_factory.entity.User;
 import com.energyfactory.energy_factory.exception.BusinessException;
@@ -114,6 +115,39 @@ public class UserService {
         userRepository.save(user);
     }
     
+    /**
+     * 소셜 로그인 후 추가 정보 업데이트
+     * 생년월일과 배송지를 업데이트합니다. (전화번호는 네이버에서 필수로 받음)
+     */
+    @Transactional
+    public UserResponseDto updateAdditionalInfo(String email, UserAdditionalInfoRequestDto requestDto) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        // 생년월일 업데이트
+        if (requestDto.getBirthDate() != null) {
+            user.setBirthDate(requestDto.getBirthDate());
+        }
+
+        // 배송지 주소 업데이트
+        if (requestDto.getAddress() != null && !requestDto.getAddress().isEmpty()) {
+            user.setAddress(requestDto.getAddress());
+        }
+
+        userRepository.save(user);
+        return convertToUserResponseDto(user);
+    }
+
+    /**
+     * 이메일로 사용자 정보 조회 (추가 정보 필요 여부 확인용)
+     */
+    public UserResponseDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        return convertToUserResponseDto(user);
+    }
+
     /**
      * User 엔티티를 UserResponseDto로 변환 (마이페이지용)
      */
