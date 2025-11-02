@@ -267,8 +267,6 @@ public class OrderService {
                 .addressLine1(order.getAddressLine1())
                 .addressLine2(order.getAddressLine2())
                 .orderItems(orderItemDtos)
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
                 .build();
     }
 
@@ -289,7 +287,6 @@ public class OrderService {
                 .recipientName(order.getRecipientName())
                 .itemCount(order.getOrderItems().size())
                 .representativeProductName(representativeProductName)
-                .createdAt(order.getCreatedAt())
                 .build();
     }
 
