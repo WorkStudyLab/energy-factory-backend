@@ -49,11 +49,6 @@ public class ProductResponseDto {
     @Schema(description = "보관 방법", example = "냉장보관")
     private String storage;
 
-    @Schema(description = "등록일", example = "2024-01-01T10:00:00")
-    private LocalDateTime createdAt;
-
-    @Schema(description = "수정일", example = "2024-01-01T10:00:00")
-    private LocalDateTime updatedAt;
 
     @Schema(description = "평균 별점", example = "4.5")
     private BigDecimal averageRating;

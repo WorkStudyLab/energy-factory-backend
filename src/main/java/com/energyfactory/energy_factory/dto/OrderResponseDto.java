@@ -46,12 +46,6 @@ public class OrderResponseDto {
     @Schema(description = "상세주소", example = "456호")
     private String addressLine2;
 
-    @Schema(description = "생성일", example = "2024-01-01T10:00:00")
-    private LocalDateTime createdAt;
-
-    @Schema(description = "수정일", example = "2024-01-01T10:00:00")
-    private LocalDateTime updatedAt;
-
     @Schema(description = "주문 상품 목록")
     private List<OrderItemResponseDto> orderItems;
 
@@ -89,11 +83,6 @@ public class OrderResponseDto {
         @Schema(description = "상품별 총액", example = "59800.00")
         private BigDecimal totalPrice;
 
-        @Schema(description = "생성일", example = "2024-01-01T10:00:00")
-        private LocalDateTime createdAt;
-
-        @Schema(description = "수정일", example = "2024-01-01T10:00:00")
-        private LocalDateTime updatedAt;
     }
 
     @Getter

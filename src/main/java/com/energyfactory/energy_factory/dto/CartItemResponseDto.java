@@ -59,10 +59,4 @@ public class CartItemResponseDto {
 
     @Schema(description = "중량 단위", example = "g")
     private String weightUnit;
-
-    @Schema(description = "장바구니 담은 날짜", example = "2024-01-01T10:00:00")
-    private LocalDateTime createdAt;
-
-    @Schema(description = "수정일", example = "2024-01-01T10:00:00")
-    private LocalDateTime updatedAt;
 }

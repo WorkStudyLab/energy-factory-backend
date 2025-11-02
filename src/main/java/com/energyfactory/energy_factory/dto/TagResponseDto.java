@@ -20,9 +20,4 @@ public class TagResponseDto {
     @Schema(description = "이 태그가 적용된 상품 수", example = "15")
     private Long productCount;
 
-    @Schema(description = "생성일", example = "2025-09-22T10:00:00")
-    private LocalDateTime createdAt;
-
-    @Schema(description = "수정일", example = "2025-09-22T10:00:00")
-    private LocalDateTime updatedAt;
 }

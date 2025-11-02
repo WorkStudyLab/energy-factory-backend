@@ -47,8 +47,6 @@ public class OrderListResponseDto {
         @Schema(description = "대표 상품명", example = "한우 등심 500g")
         private String representativeProductName;
 
-        @Schema(description = "생성일", example = "2024-01-01T10:00:00")
-        private LocalDateTime createdAt;
     }
 
     @Getter
