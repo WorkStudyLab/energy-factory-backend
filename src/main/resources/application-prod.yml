@@ -72,11 +72,11 @@ jwt:
 # OAuth2 리다이렉트 URL 설정
 app:
   oauth2:
-    redirect-url: ${FRONTEND_URL:https://d1o0ytu060swr1.cloudfront.net}
+    redirect-url: ${FRONTEND_URL:https://energy-factory.kr}
   cookie:
     secure: true  # 프로덕션 환경 HTTPS
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS:https://d1o0ytu060swr1.cloudfront.net}
+    allowed-origins: ${ALLOWED_ORIGINS:https://energy-factory.kr,https://www.energy-factory.kr,https://d1o0ytu060swr1.cloudfront.net}
   mail:
     from: ${MAIL_FROM_ADDRESS:noreply@energy-factory.kr}
     from-name: Energy Factory
