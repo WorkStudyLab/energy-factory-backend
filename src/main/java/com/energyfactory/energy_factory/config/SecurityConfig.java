@@ -8,6 +8,7 @@ import com.energyfactory.energy_factory.jwt.LoginFilter;
 import com.energyfactory.energy_factory.repository.UserRepository;
 import com.energyfactory.energy_factory.service.CustomOAuth2UserService;
 import com.energyfactory.energy_factory.service.RefreshTokenService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +36,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final UserRepository userRepository;
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil,
                          RefreshTokenService refreshTokenService, CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
@@ -119,13 +123,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "https://energy-factory.kr",  // 커스텀 도메인
-                "https://www.energy-factory.kr",  // www 포함
-                "https://d1o0ytu060swr1.cloudfront.net",  // CloudFront 도메인
-                "http://localhost:3000",
-                "http://localhost:5173"
-        ));
+
+        // 환경변수에서 CORS 허용 오리진 목록 가져오기
+        String[] origins = allowedOrigins.split(",");
+        configuration.setAllowedOrigins(Arrays.asList(origins));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
