@@ -33,10 +33,8 @@ public class PaymentController {
     @GetMapping("/{id}")
     @Operation(
         summary = "결제 정보 조회",
-        description = "JWT 토큰으로 인증된 사용자의 결제 정보를 조회합니다. 본인의 결제만 조회 가능합니다.\n\n" +
-                     "- id: 결제 ID (paymentId)\n" +
-                     "- 사용자 인증: JWT 토큰에서 자동 추출\n" +
-                     "- 본인 소유가 아닌 결제 조회 시 403 에러 발생"
+        description = "본인의 결제 정보를 조회합니다. 본인 소유가 아닌 결제 조회 시 403 에러 발생\n\n" +
+                     "- id: 결제 ID (paymentId)"
     )
     public ResponseEntity<ApiResponse<PaymentResponseDto>> getPayment(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -69,10 +67,8 @@ public class PaymentController {
     @PostMapping("/toss/{id}/cancel")
     @Operation(
         summary = "토스페이먼츠 결제 취소",
-        description = "JWT 토큰으로 인증된 사용자의 결제를 취소하고 환불 처리합니다. 본인의 결제만 취소 가능합니다.\n\n" +
+        description = "본인의 결제를 취소하고 환불 처리합니다. 본인 소유가 아닌 결제 취소 시 403 에러 발생\n\n" +
                      "- id: 결제 ID (paymentId)\n" +
-                     "- 사용자 인증: JWT 토큰에서 자동 추출\n" +
-                     "- 본인 소유가 아닌 결제 취소 시 403 에러 발생\n" +
                      "- 취소 성공 시 재고 자동 복원"
     )
     public ResponseEntity<ApiResponse<PaymentResponseDto>> cancelTossPayment(
