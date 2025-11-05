@@ -33,14 +33,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException, ServletException {
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = customUserDetails.getUser().getId();
         String username = customUserDetails.getUsername();
         String role = customUserDetails.getAuthorities().iterator().next().getAuthority();
 
-        // Access Token 생성 (10분)
-        String accessToken = jwtUtil.createAccessToken(username, role, 10 * 60 * 1000L);
+        // Access Token 생성 (userId 포함, 10분)
+        String accessToken = jwtUtil.createAccessToken(userId, username, role, 10 * 60 * 1000L);
 
-        // Refresh Token 생성 (7일, application.yml의 설정 사용)
-        String refreshToken = jwtUtil.createRefreshToken(username, refreshTokenExpiration * 1000L);
+        // Refresh Token 생성 (userId 포함, 7일, application.yml의 설정 사용)
+        String refreshToken = jwtUtil.createRefreshToken(userId, username, refreshTokenExpiration * 1000L);
 
         // Refresh Token을 Redis에 저장
         refreshTokenService.saveRefreshToken(username, refreshToken);

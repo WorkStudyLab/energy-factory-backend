@@ -23,6 +23,11 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
     }
 
+    public Long getUserId(String token) {
+
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", Long.class);
+    }
+
     public String getRole(String token) {
 
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
@@ -42,8 +47,9 @@ public class JwtUtil {
     }
 
 
-    public String createAccessToken(String username, String role, Long expiredMs) {
+    public String createAccessToken(Long userId, String username, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("role", role)
                 .claim("tokenType", "access")
@@ -53,8 +59,9 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String username, Long expiredMs) {
+    public String createRefreshToken(Long userId, String username, Long expiredMs) {
         return Jwts.builder()
+                .claim("userId", userId)
                 .claim("username", username)
                 .claim("tokenType", "refresh")
                 .issuedAt(new Date(System.currentTimeMillis()))

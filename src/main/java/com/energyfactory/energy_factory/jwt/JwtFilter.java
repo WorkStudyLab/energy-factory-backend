@@ -67,13 +67,13 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // 5. 토큰에서 username(email) 획득
-            String email = jwtUtil.getUsername(token);
+            // 5. 토큰에서 userId 획득
+            Long userId = jwtUtil.getUserId(token);
 
-            // 6. DB에서 실제 User 엔티티 조회
-            Optional<User> userOptional = userRepository.findByEmail(email);
+            // 6. DB에서 실제 User 엔티티 조회 (PK 조회로 성능 향상)
+            Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
-                System.out.println("User not found: " + email);
+                System.out.println("User not found: " + userId);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -90,7 +90,7 @@ public class JwtFilter extends OncePerRequestFilter {
             
             // 9. 세션에 사용자 등록
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            System.out.println("authentication success: " + email);
+            System.out.println("authentication success: userId=" + userId + ", email=" + user.getEmail());
 
         } catch (Exception e) {
             System.out.println("JWT processing error: " + e.getMessage());

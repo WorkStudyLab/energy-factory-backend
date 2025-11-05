@@ -51,19 +51,20 @@ public class AuthController {
             throw new AuthException(ResultCode.INVALID_TOKEN_TYPE);
         }
         
-        // 사용자명 추출
+        // 사용자 정보 추출 (userId, username)
+        Long userId = jwtUtil.getUserId(refreshToken);
         String username = jwtUtil.getUsername(refreshToken);
-        
+
         // Redis에서 저장된 Refresh Token과 비교 검증
         if (!refreshTokenService.validateRefreshToken(username, refreshToken)) {
             throw new AuthException(ResultCode.INVALID_REFRESH_TOKEN);
         }
-        
-        // 새로운 Access Token 발급
-        String newAccessToken = jwtUtil.createAccessToken(username, "USER", 30 * 60 * 1000L);
-        
-        // 새로운 Refresh Token 발급
-        String newRefreshToken = jwtUtil.createRefreshToken(username, 7 * 24 * 60 * 60 * 1000L);
+
+        // 새로운 Access Token 발급 (userId 포함)
+        String newAccessToken = jwtUtil.createAccessToken(userId, username, "USER", 30 * 60 * 1000L);
+
+        // 새로운 Refresh Token 발급 (userId 포함)
+        String newRefreshToken = jwtUtil.createRefreshToken(userId, username, 7 * 24 * 60 * 60 * 1000L);
         refreshTokenService.saveRefreshToken(username, newRefreshToken);
 
         // 쿠키에 새로운 토큰 설정

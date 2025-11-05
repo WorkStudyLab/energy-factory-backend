@@ -124,9 +124,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             System.out.println("User ID: " + userId);
             System.out.println("Role: " + role);
 
-            // 토큰 생성
-            String accessToken = jwtUtil.createAccessToken(username, role, 30 * 60 * 1000L);
-            String refreshToken = jwtUtil.createRefreshToken(username, 7 * 24 * 60 * 60 * 1000L);
+            // 토큰 생성 (userId 포함)
+            String accessToken = jwtUtil.createAccessToken(userId, username, role, 30 * 60 * 1000L);
+            String refreshToken = jwtUtil.createRefreshToken(userId, username, 7 * 24 * 60 * 60 * 1000L);
 
             System.out.println("Access Token generated: " + (accessToken != null));
             System.out.println("Refresh Token generated: " + (refreshToken != null));
