@@ -89,13 +89,13 @@ public class PaymentService {
         log.info("토스페이먼츠 결제 승인 시작 - orderId: {}, amount: {}",
                 confirmRequest.getOrderId(), confirmRequest.getAmount());
 
-        // 1. orderId에서 실제 주문 ID 추출
-        // 형식: ORDER_{실제ID}_{타임스탬프} 또는 숫자만
-        Long orderId = extractOrderId(confirmRequest.getOrderId());
-        log.info("추출된 주문 ID: {}", orderId);
+        // 1. orderId는 주문번호(order_number)로 사용
+        String orderIdStr = confirmRequest.getOrderId();
+        Long orderNumber = Long.parseLong(orderIdStr);
+        log.info("주문번호로 조회: {}", orderNumber);
 
-        // 2. 주문 조회 및 검증
-        Order order = orderRepository.findById(orderId)
+        // 2. 주문번호로 주문 조회
+        Order order = orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
         // 2. 결제 금액 검증 (주문 총액과 일치해야 함)
