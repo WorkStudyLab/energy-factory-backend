@@ -11,7 +11,7 @@ spring:
           naver:
             client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://energy-factory.kr/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             scope: name,email,mobile
             client-name: Naver
