@@ -47,11 +47,16 @@ public class PaymentService {
     }
 
     /**
-     * 결제 정보 조회
+     * 결제 정보 조회 (본인 결제만 조회 가능)
      */
-    public PaymentResponseDto getPayment(Long paymentId) {
+    public PaymentResponseDto getPayment(Long userId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
+
+        // 결제가 해당 사용자의 것인지 확인
+        if (!payment.getOrder().getUser().getId().equals(userId)) {
+            throw new BusinessException(ResultCode.ACCESS_DENIED);
+        }
 
         return convertToResponseDto(payment);
     }
@@ -151,21 +156,28 @@ public class PaymentService {
     }
 
     /**
-     * 토스페이먼츠 결제 취소 처리
+     * 토스페이먼츠 결제 취소 처리 (본인 결제만 취소 가능)
      *
+     * @param userId 사용자 ID
      * @param paymentId 결제 ID
      * @param reason 취소 사유
      * @return 결제 응답 DTO
      */
     @Transactional
-    public PaymentResponseDto cancelTossPayment(Long paymentId, String reason) {
-        log.info("토스페이먼츠 결제 취소 시작 - paymentId: {}, reason: {}", paymentId, reason);
+    public PaymentResponseDto cancelTossPayment(Long userId, Long paymentId, String reason) {
+        log.info("토스페이먼츠 결제 취소 시작 - userId: {}, paymentId: {}, reason: {}", userId, paymentId, reason);
 
         // 1. 결제 조회
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
-        // 2. 환불 가능 상태 확인
+        // 2. 결제가 해당 사용자의 것인지 확인 (보안: IDOR 방지)
+        if (!payment.getOrder().getUser().getId().equals(userId)) {
+            log.error("결제 취소 권한 없음 - userId: {}, paymentUserId: {}", userId, payment.getOrder().getUser().getId());
+            throw new BusinessException(ResultCode.ACCESS_DENIED);
+        }
+
+        // 3. 환불 가능 상태 확인
         if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
             throw new BusinessException(ResultCode.INVALID_REQUEST);
         }

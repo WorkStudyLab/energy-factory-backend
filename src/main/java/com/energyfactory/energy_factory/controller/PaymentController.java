@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -29,21 +30,20 @@ public class PaymentController {
     private final TossPaymentsConfig tossPaymentsConfig;
 
 
-    @GetMapping("/order/{orderId}")
-    @Operation(summary = "주문별 결제 정보 조회")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPaymentByOrder(
-            @PathVariable Long orderId
-    ) {
-        PaymentResponseDto payment = paymentService.getPaymentByOrder(orderId);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
-    }
-
     @GetMapping("/{id}")
-    @Operation(summary = "결제 정보 조회")
+    @Operation(
+        summary = "결제 정보 조회",
+        description = "JWT 토큰으로 인증된 사용자의 결제 정보를 조회합니다. 본인의 결제만 조회 가능합니다.\n\n" +
+                     "- id: 결제 ID (paymentId)\n" +
+                     "- 사용자 인증: JWT 토큰에서 자동 추출\n" +
+                     "- 본인 소유가 아닌 결제 조회 시 403 에러 발생"
+    )
     public ResponseEntity<ApiResponse<PaymentResponseDto>> getPayment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id
     ) {
-        PaymentResponseDto payment = paymentService.getPayment(id);
+        Long userId = userDetails.getUser().getId();
+        PaymentResponseDto payment = paymentService.getPayment(userId, id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
     }
 
@@ -69,15 +69,21 @@ public class PaymentController {
     @PostMapping("/toss/{id}/cancel")
     @Operation(
         summary = "토스페이먼츠 결제 취소",
-        description = "토스페이먼츠를 통해 결제된 건을 취소하고 환불 처리합니다."
+        description = "JWT 토큰으로 인증된 사용자의 결제를 취소하고 환불 처리합니다. 본인의 결제만 취소 가능합니다.\n\n" +
+                     "- id: 결제 ID (paymentId)\n" +
+                     "- 사용자 인증: JWT 토큰에서 자동 추출\n" +
+                     "- 본인 소유가 아닌 결제 취소 시 403 에러 발생\n" +
+                     "- 취소 성공 시 재고 자동 복원"
     )
     public ResponseEntity<ApiResponse<PaymentResponseDto>> cancelTossPayment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @RequestParam(required = false) String reason
     ) {
-        log.info("토스페이먼츠 결제 취소 요청 - paymentId: {}, reason: {}", id, reason);
+        Long userId = userDetails.getUser().getId();
+        log.info("토스페이먼츠 결제 취소 요청 - userId: {}, paymentId: {}, reason: {}", userId, id, reason);
 
-        PaymentResponseDto payment = paymentService.cancelTossPayment(id, reason);
+        PaymentResponseDto payment = paymentService.cancelTossPayment(userId, id, reason);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
     }
 }
