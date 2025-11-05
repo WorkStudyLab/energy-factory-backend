@@ -18,8 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import com.energyfactory.energy_factory.dto.CustomUserDetails;
 import jakarta.validation.Valid;
 
 /**
@@ -43,10 +45,10 @@ public class UserController {
                 .body(ApiResponse.of(ResultCode.SUCCESS_POST, userService.signup(signupRequestDto)));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/me")
     @Operation(
-        summary = "사용자 정보 조회 (마이페이지)",
-        description = "사용자 ID로 마이페이지에 필요한 정보를 조회합니다. 기본 배송지 주소가 자동으로 포함됩니다."
+        summary = "내 정보 조회 (마이페이지)",
+        description = "JWT 토큰으로 인증된 사용자의 정보를 조회합니다. 기본 배송지 주소가 자동으로 포함됩니다."
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -58,25 +60,36 @@ public class UserController {
             )
         )
     })
-    public ResponseEntity<ApiResponse<UserResponseDto>> getUser(@PathVariable Long id) {
-        UserResponseDto user = userService.getUserById(id);
+    public ResponseEntity<ApiResponse<UserResponseDto>> getUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        UserResponseDto user = userService.getUserById(userId);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, user));
     }
 
-    @PutMapping("/{id}/password")
-    @Operation(summary = "비밀번호 변경")
+    @PutMapping("/password")
+    @Operation(
+        summary = "비밀번호 변경",
+        description = "JWT 토큰으로 인증된 사용자의 비밀번호를 변경합니다. 현재 비밀번호 확인이 필요합니다."
+    )
     public ResponseEntity<ApiResponse<Void>> changePassword(
-            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam String currentPassword,
             @RequestParam String newPassword) {
-        userService.changePassword(id, currentPassword, newPassword);
+        Long userId = userDetails.getUser().getId();
+        userService.changePassword(userId, currentPassword, newPassword);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "회원 탈퇴")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @DeleteMapping("/me")
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "JWT 토큰으로 인증된 사용자의 계정을 삭제합니다. 이 작업은 되돌릴 수 없습니다."
+    )
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        userService.deleteUser(userId);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, null));
     }
 
