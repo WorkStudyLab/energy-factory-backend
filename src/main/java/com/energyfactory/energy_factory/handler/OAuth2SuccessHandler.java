@@ -25,8 +25,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${jwt.refresh-token-expiration}")
     private Long refreshTokenExpiration;
 
-    @Value("${app.oauth2.redirect-url}")
-    private String frontendRedirectUrl;
+    @Value("${app.oauth2.signup-url}")
+    private String signupUrl;
+
+    @Value("${app.oauth2.home-url}")
+    private String homeUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -50,9 +53,29 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         addTokenCookie(response, "accessToken", accessToken, 10 * 60); // 10분
         addTokenCookie(response, "refreshToken", refreshToken, refreshTokenExpiration.intValue()); // 7일
 
-        // 프론트엔드로 리다이렉트 (토큰은 쿠키에 있음)
-        // 추가 정보 필요 여부는 프론트엔드에서 API 호출로 확인
-        getRedirectStrategy().sendRedirect(request, response, frontendRedirectUrl);
+        // 사용자 정보 완성도에 따라 리다이렉트 URL 결정
+        String redirectUrl = determineRedirectUrl(customUserDetails);
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+    }
+
+    /**
+     * 사용자 정보 완성도를 확인하여 리다이렉트 URL 결정
+     * - 필수 정보가 없으면: 회원가입 화면 (추가 정보 입력)
+     * - 모든 정보가 있으면: 홈 화면
+     */
+    private String determineRedirectUrl(CustomUserDetails customUserDetails) {
+        // 생년월일과 주소가 모두 있으면 기존 회원으로 간주
+        boolean hasBirthDate = customUserDetails.getUser().getBirthDate() != null;
+        boolean hasAddress = customUserDetails.getUser().getAddress() != null
+                          && !customUserDetails.getUser().getAddress().trim().isEmpty();
+
+        if (hasBirthDate && hasAddress) {
+            // 기존 회원: 홈으로 이동
+            return homeUrl;
+        } else {
+            // 신규 회원 또는 정보 미완성: 회원가입 화면으로 이동
+            return signupUrl;
+        }
     }
 
     /**

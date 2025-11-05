@@ -57,7 +57,8 @@ app:
   cors:
     allowed-origins: http://localhost:3000,http://localhost:8080
   oauth2:
-    redirect-url: http://localhost:8080/complete-profile.html
+    signup-url: http://localhost:5173/signup  # 추가 정보 입력 화면
+    home-url: http://localhost:5173/products  # 홈 화면 (제품 페이지)
   cookie:
     secure: false
   mail:

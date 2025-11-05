@@ -44,15 +44,21 @@ public class SwaggerConfig {
                         .title("Energy Factory API")
                         .description("백엔드 API 문서\n\n" +
                                 "## 인증 방법\n" +
+                                "### 일반 로그인\n" +
                                 "1. `/api/auth/login`으로 로그인하여 JWT 토큰을 받습니다.\n" +
                                 "2. 우측 상단의 'Authorize' 버튼을 클릭합니다.\n" +
                                 "3. `accessToken` 값을 입력합니다 (Bearer 접두사 없이).\n" +
                                 "4. 인증이 필요한 API를 호출할 수 있습니다.\n\n" +
+                                "### 네이버 소셜 로그인\n" +
+                                "1. `GET /api/oauth2/naver` API를 호출하여 네이버 로그인을 시작합니다.\n" +
+                                "2. 네이버 인증 완료 후 자동으로 회원가입 및 로그인 처리됩니다.\n" +
+                                "3. JWT 토큰이 HttpOnly 쿠키로 자동 저장됩니다.\n" +
+                                "4. 추가 정보가 필요한 경우 `/api/users/additional-info`로 업데이트합니다.\n\n" +
                                 "## 주요 기능\n" +
                                 "- **상품 관리**: 상품 조회, 검색, 필터링\n" +
                                 "- **장바구니**: 로그인 후 이용 가능 (디바이스 간 동기화)\n" +
                                 "- **주문**: 직접 주문 또는 장바구니 기반 주문\n" +
-                                "- **사용자 관리**: 회원가입, 로그인, 프로필 관리")
+                                "- **사용자 관리**: 회원가입, 로그인, 프로필 관리, 소셜 로그인")
                         .version("v1.0.0")
                         .contact(new Contact()
                                 .name("Energy Factory Team")
@@ -68,7 +74,7 @@ public class SwaggerConfig {
     
     private Paths customPaths() {
         Paths paths = new Paths();
-        
+
         // Login 엔드포인트 수동 추가
         PathItem loginPath = new PathItem()
                 .post(new Operation()
@@ -78,7 +84,7 @@ public class SwaggerConfig {
                         .requestBody(new RequestBody()
                                 .required(true)
                                 .content(new Content()
-                                        .addMediaType("application/json", 
+                                        .addMediaType("application/json",
                                                 new MediaType().schema(new Schema<>().$ref("#/components/schemas/LoginRequest")))))
                         .responses(new ApiResponses()
                                 .addApiResponse("200", new ApiResponse()
@@ -91,7 +97,7 @@ public class SwaggerConfig {
                                         .content(new Content()
                                                 .addMediaType("application/json",
                                                         new MediaType().schema(new Schema<>().$ref("#/components/schemas/ApiResponse")))))));
-        
+
         paths.addPathItem("/api/auth/login", loginPath);
         return paths;
     }
