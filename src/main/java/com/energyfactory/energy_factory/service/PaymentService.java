@@ -86,8 +86,8 @@ public class PaymentService {
      */
     @Transactional
     public PaymentResponseDto confirmTossPayment(TossPaymentConfirmRequestDto confirmRequest) {
-        log.info("토스페이먼츠 결제 승인 시작 - orderId: {}, amount: {}",
-                confirmRequest.getOrderId(), confirmRequest.getAmount());
+        log.info("토스페이먼츠 결제 승인 시작 - orderId: {}",
+                confirmRequest.getOrderId());
 
         // 1. orderId는 주문번호(order_number)로 사용
         String orderIdStr = confirmRequest.getOrderId();
@@ -98,19 +98,19 @@ public class PaymentService {
         Order order = orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
 
-        // 2. 결제 금액 검증 (주문 총액과 일치해야 함)
-        // 소수점이 있을 수 있으므로 반올림해서 비교 (원화는 정수만 사용)
+        // 3. 서버에서 주문 금액 가져오기 (보안: 클라이언트가 보낸 금액은 사용하지 않음)
         BigDecimal orderAmount = order.getTotalPrice().setScale(0, java.math.RoundingMode.HALF_UP);
-        BigDecimal requestAmount = confirmRequest.getAmount().setScale(0, java.math.RoundingMode.HALF_UP);
+        log.info("주문 금액: {}", orderAmount);
 
-        if (orderAmount.compareTo(requestAmount) != 0) {
-            log.error("결제 금액 불일치 - 주문 금액: {} (반올림: {}), 결제 요청 금액: {} (반올림: {})",
-                    order.getTotalPrice(), orderAmount, confirmRequest.getAmount(), requestAmount);
-            throw new BusinessException(ResultCode.INVALID_PRICE);
-        }
+        // 4. 토스페이먼츠 API 요청 객체 생성 (서버에서 계산한 금액 사용)
+        TossPaymentConfirmRequestDto tossRequest = TossPaymentConfirmRequestDto.builder()
+                .paymentKey(confirmRequest.getPaymentKey())
+                .orderId(confirmRequest.getOrderId())
+                .amount(orderAmount)
+                .build();
 
-        // 3. 토스페이먼츠 결제 승인 API 호출
-        TossPaymentResponseDto tossResponse = tossPaymentsClient.confirmPayment(confirmRequest);
+        // 5. 토스페이먼츠 결제 승인 API 호출
+        TossPaymentResponseDto tossResponse = tossPaymentsClient.confirmPayment(tossRequest);
 
         // 4. 결제 정보 DB 저장
         PaymentMethod paymentMethod = convertTossMethodToEnum(tossResponse.getMethod(), tossResponse.getEasyPay());

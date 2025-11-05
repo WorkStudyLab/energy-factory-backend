@@ -42,11 +42,11 @@ public class TossPaymentsClient {
     /**
      * 결제 승인 API 호출
      *
-     * @param request 결제 승인 요청 정보
+     * @param request 결제 승인 요청 정보 (서버에서 계산한 금액 포함)
      * @return 토스페이먼츠 결제 응답
      */
     public TossPaymentResponseDto confirmPayment(TossPaymentConfirmRequestDto request) {
-        log.info("토스페이먼츠 결제 승인 요청 - paymentKey: {}, orderId: {}, amount: {}",
+        log.info("토스페이먼츠 결제 승인 API 호출 - paymentKey: {}, orderId: {}, amount: {}",
                 request.getPaymentKey(), request.getOrderId(), request.getAmount());
 
         try {

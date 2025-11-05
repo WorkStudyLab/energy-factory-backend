@@ -52,14 +52,15 @@ public class PaymentController {
     @PostMapping("/toss/confirm")
     @Operation(
         summary = "토스페이먼츠 결제 승인",
-        description = "프론트엔드에서 받은 paymentKey, orderId, amount로 실제 결제를 승인합니다.\n\n" +
+        description = "프론트엔드에서 받은 paymentKey, orderId로 실제 결제를 승인합니다.\n\n" +
+                     "결제 금액은 서버에서 주문 정보를 조회하여 자동으로 설정됩니다.\n\n" +
                      "결제 위젯에서 결제 성공 시 리다이렉트된 페이지에서 이 API를 호출하면 됩니다."
     )
     public ResponseEntity<ApiResponse<PaymentResponseDto>> confirmTossPayment(
             @Valid @RequestBody TossPaymentConfirmRequestDto confirmRequest
     ) {
-        log.info("토스페이먼츠 결제 승인 요청 - orderId: {}, amount: {}",
-                confirmRequest.getOrderId(), confirmRequest.getAmount());
+        log.info("토스페이먼츠 결제 승인 요청 - orderId: {}",
+                confirmRequest.getOrderId());
 
         PaymentResponseDto payment = paymentService.confirmTossPayment(confirmRequest);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, payment));
