@@ -74,6 +74,7 @@ app:
   oauth2:
     signup-url: ${FRONTEND_SIGNUP_URL:https://energy-factory.kr/signup}  # 추가 정보 입력 화면
     home-url: ${FRONTEND_HOME_URL:https://energy-factory.kr/products}  # 홈 화면 (제품 페이지)
+    mypage-url: ${FRONTEND_MYPAGE_URL:https://energy-factory.kr/mypage}  # 마이페이지 (계정 연동용)
   cookie:
     secure: true  # 프로덕션 환경 HTTPS
   cors:

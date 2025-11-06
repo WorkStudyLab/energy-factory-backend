@@ -59,6 +59,7 @@ app:
   oauth2:
     signup-url: http://localhost:5173/signup  # 추가 정보 입력 화면
     home-url: http://localhost:5173/products  # 홈 화면 (제품 페이지)
+    mypage-url: http://localhost:5173/mypage  # 마이페이지 (계정 연동용)
   cookie:
     secure: false
   mail:

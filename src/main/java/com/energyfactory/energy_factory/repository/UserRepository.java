@@ -33,4 +33,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Optional<User> findByProviderAndProviderId(com.energyfactory.energy_factory.utils.enums.Provider provider, String providerId);
 
+    /**
+     * ProviderId로 사용자 조회 (Provider 무관)
+     * LOCAL 사용자가 네이버 연동 후 네이버로 로그인할 때 사용
+     */
+    Optional<User> findByProviderId(String providerId);
+
 }
