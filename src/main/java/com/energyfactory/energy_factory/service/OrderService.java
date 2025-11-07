@@ -556,6 +556,9 @@ public class OrderService {
 
         return NutritionSummaryDto.builder()
                 .totalCalories(totalCalories.setScale(1, RoundingMode.HALF_UP))
+                .totalProtein(totalProteinGrams.setScale(1, RoundingMode.HALF_UP))
+                .totalCarbs(totalCarbsGrams.setScale(1, RoundingMode.HALF_UP))
+                .totalFat(totalFatGrams.setScale(1, RoundingMode.HALF_UP))
                 .proteinRatio(proteinRatio.setScale(1, RoundingMode.HALF_UP))
                 .carbsRatio(carbsRatio.setScale(1, RoundingMode.HALF_UP))
                 .fatRatio(fatRatio.setScale(1, RoundingMode.HALF_UP))

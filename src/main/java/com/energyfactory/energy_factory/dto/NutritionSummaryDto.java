@@ -14,6 +14,15 @@ public class NutritionSummaryDto {
     @Schema(description = "총 칼로리 (kcal)", example = "2450.5")
     private BigDecimal totalCalories;
 
+    @Schema(description = "총 단백질 양 (g)", example = "180.5")
+    private BigDecimal totalProtein;
+
+    @Schema(description = "총 탄수화물 양 (g)", example = "250.0")
+    private BigDecimal totalCarbs;
+
+    @Schema(description = "총 지방 양 (g)", example = "65.5")
+    private BigDecimal totalFat;
+
     @Schema(description = "단백질 칼로리 비율 (%) - 총 칼로리 대비 단백질이 차지하는 칼로리 비율 (단백질 1g = 4kcal)",
             example = "35.5")
     private BigDecimal proteinRatio;
