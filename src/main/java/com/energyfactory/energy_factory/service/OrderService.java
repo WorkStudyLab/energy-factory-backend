@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -303,6 +305,10 @@ public class OrderService {
                                .variantName(orderItem.getProductVariant().getVariantName());
                     }
 
+                    // 영양 정보 추가
+                    builder.nutrition(buildNutritionDto(orderItem.getProduct().getProductNutrients()))
+                           .vitaminsAndMinerals(buildVitaminMinerals(orderItem.getProduct().getProductNutrients()));
+
                     return builder.build();
                 })
                 .collect(Collectors.toList());
@@ -333,6 +339,9 @@ public class OrderService {
                 .estimatedDeliveryDate(order.getCreatedAt().plusDays(2))
                 .build();
 
+        // 영양소 합계 계산
+        NutritionSummaryDto nutritionSummary = calculateNutritionSummary(order.getOrderItems());
+
         return OrderResponseDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -348,6 +357,7 @@ public class OrderService {
                 .orderItems(orderItemDtos)
                 .payment(paymentDto)
                 .deliveryInfo(deliveryInfo)
+                .nutritionSummary(nutritionSummary)
                 .build();
     }
 
@@ -429,6 +439,127 @@ public class OrderService {
         );
 
         return convertToResponseDto(order);
+    }
+
+    /**
+     * ProductNutrient 리스트에서 NutritionDto 생성
+     * 주요 영양소(칼로리, 단백질, 탄수화물, 지방) 및 상세 영양소를 이름별로 매핑
+     */
+    private NutritionDto buildNutritionDto(List<ProductNutrient> nutrients) {
+        NutritionDto.NutritionDtoBuilder builder = NutritionDto.builder();
+
+        for (ProductNutrient n : nutrients) {
+            String name = n.getName();
+            String value = n.getValue();
+
+            try {
+                // 영양소 이름에 따라 적절한 필드에 값 설정
+                switch (name) {
+                    case "칼로리" -> builder.calories(Integer.parseInt(value));
+                    case "단백질" -> builder.protein(new BigDecimal(value));
+                    case "탄수화물" -> builder.carbs(new BigDecimal(value));
+                    case "지방" -> builder.fat(new BigDecimal(value));
+                    case "포화지방" -> builder.saturatedFat(new BigDecimal(value));
+                    case "트랜스지방" -> builder.transFat(new BigDecimal(value));
+                    case "콜레스테롤" -> builder.cholesterol(Integer.parseInt(value));
+                    case "나트륨" -> builder.sodium(Integer.parseInt(value));
+                    case "식이섬유" -> builder.fiber(new BigDecimal(value));
+                    case "당류" -> builder.sugars(new BigDecimal(value));
+                }
+            } catch (NumberFormatException e) {
+                // 변환 실패 시 무시 (해당 영양소는 null로 유지)
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * ProductNutrient 리스트에서 비타민/미네랄 리스트 생성
+     * 주요 영양소 10개를 제외한 나머지 영양소 중 dailyPercentage가 있는 항목만 추출
+     */
+    private List<VitaminMineralDto> buildVitaminMinerals(List<ProductNutrient> nutrients) {
+        // 주요 영양소 목록 (NutritionDto에 포함되는 항목들)
+        List<String> mainNutrients = Arrays.asList(
+                "칼로리", "단백질", "탄수화물", "지방",
+                "포화지방", "트랜스지방", "콜레스테롤", "나트륨", "식이섬유", "당류"
+        );
+
+        return nutrients.stream()
+                .filter(n -> !mainNutrients.contains(n.getName()))  // 주요 영양소 제외
+                .filter(n -> n.getDailyPercentage() != null)        // dailyPercentage가 있는 것만 (비타민/미네랄 구분)
+                .map(n -> VitaminMineralDto.builder()
+                        .name(n.getName())
+                        .amount(n.getValue() + n.getUnit())  // "0.5" + "mg" = "0.5mg"
+                        .daily(n.getDailyPercentage())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 주문 전체 영양소 합계 계산 (차트용)
+     *
+     * 칼로리 계산:
+     * - 단백질: 1g = 4kcal
+     * - 탄수화물: 1g = 4kcal
+     * - 지방: 1g = 9kcal
+     */
+    private NutritionSummaryDto calculateNutritionSummary(List<OrderItem> orderItems) {
+        BigDecimal totalProteinGrams = BigDecimal.ZERO;
+        BigDecimal totalCarbsGrams = BigDecimal.ZERO;
+        BigDecimal totalFatGrams = BigDecimal.ZERO;
+
+        for (OrderItem orderItem : orderItems) {
+            Product product = orderItem.getProduct();
+            Integer quantity = orderItem.getQuantity();
+            BigDecimal weight = product.getWeight() != null ? product.getWeight() : BigDecimal.valueOf(100);
+
+            // 영양소는 100g 기준이므로, 실제 중량에 맞게 계산
+            // (상품 중량 / 100g) * 수량
+            BigDecimal multiplier = weight.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(quantity));
+
+            NutritionDto nutrition = buildNutritionDto(product.getProductNutrients());
+
+            if (nutrition.getProtein() != null) {
+                totalProteinGrams = totalProteinGrams.add(nutrition.getProtein().multiply(multiplier));
+            }
+            if (nutrition.getCarbs() != null) {
+                totalCarbsGrams = totalCarbsGrams.add(nutrition.getCarbs().multiply(multiplier));
+            }
+            if (nutrition.getFat() != null) {
+                totalFatGrams = totalFatGrams.add(nutrition.getFat().multiply(multiplier));
+            }
+        }
+
+        // 영양소별 칼로리 계산
+        BigDecimal proteinCalories = totalProteinGrams.multiply(BigDecimal.valueOf(4)); // 단백질 1g = 4kcal
+        BigDecimal carbsCalories = totalCarbsGrams.multiply(BigDecimal.valueOf(4));     // 탄수화물 1g = 4kcal
+        BigDecimal fatCalories = totalFatGrams.multiply(BigDecimal.valueOf(9));         // 지방 1g = 9kcal
+
+        // 총 칼로리
+        BigDecimal totalCalories = proteinCalories.add(carbsCalories).add(fatCalories);
+
+        // 칼로리 비율 계산 (%)
+        BigDecimal proteinRatio = BigDecimal.ZERO;
+        BigDecimal carbsRatio = BigDecimal.ZERO;
+        BigDecimal fatRatio = BigDecimal.ZERO;
+
+        if (totalCalories.compareTo(BigDecimal.ZERO) > 0) {
+            proteinRatio = proteinCalories.divide(totalCalories, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            carbsRatio = carbsCalories.divide(totalCalories, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            fatRatio = fatCalories.divide(totalCalories, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        return NutritionSummaryDto.builder()
+                .totalCalories(totalCalories.setScale(1, RoundingMode.HALF_UP))
+                .proteinRatio(proteinRatio.setScale(1, RoundingMode.HALF_UP))
+                .carbsRatio(carbsRatio.setScale(1, RoundingMode.HALF_UP))
+                .fatRatio(fatRatio.setScale(1, RoundingMode.HALF_UP))
+                .build();
     }
 
 }

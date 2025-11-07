@@ -55,6 +55,9 @@ public class OrderResponseDto {
     @Schema(description = "배송 정보")
     private DeliveryInfoDto deliveryInfo;
 
+    @Schema(description = "주문 전체 영양소 합계 (차트용)")
+    private NutritionSummaryDto nutritionSummary;
+
     @Getter
     @Builder
     @Schema(description = "주문 상품 정보")
@@ -85,6 +88,12 @@ public class OrderResponseDto {
 
         @Schema(description = "상품별 총액", example = "59800.00")
         private BigDecimal totalPrice;
+
+        @Schema(description = "영양 성분 정보")
+        private NutritionDto nutrition;
+
+        @Schema(description = "비타민 & 미네랄 목록")
+        private List<VitaminMineralDto> vitaminsAndMinerals;
 
     }
 
