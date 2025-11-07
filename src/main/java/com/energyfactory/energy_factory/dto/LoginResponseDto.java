@@ -24,4 +24,7 @@ public class LoginResponseDto {
 
     @Schema(description = "토큰 타입", example = "Bearer")
     private String tokenType;
+
+    @Schema(description = "사용자 권한", example = "USER", allowableValues = {"USER", "ADMIN"})
+    private String role;
 }

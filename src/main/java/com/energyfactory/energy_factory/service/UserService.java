@@ -231,6 +231,7 @@ public class UserService {
                 .authProvider(user.getProvider().name().toLowerCase())
                 .memberSince(user.getCreatedAt().toLocalDate())
                 .address(user.getAddress() != null ? user.getAddress() : "")
+                .role(user.getRole().name())
                 .build();
     }
 }

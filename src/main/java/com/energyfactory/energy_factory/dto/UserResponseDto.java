@@ -31,4 +31,7 @@ public class UserResponseDto {
 
     @Schema(description = "기본 배송지 주소", example = "서울특별시 금천구 스타밸리", requiredMode = Schema.RequiredMode.REQUIRED)
     private String address;
+
+    @Schema(description = "사용자 권한", example = "USER", allowableValues = {"USER", "ADMIN"}, requiredMode = Schema.RequiredMode.REQUIRED)
+    private String role;
 }

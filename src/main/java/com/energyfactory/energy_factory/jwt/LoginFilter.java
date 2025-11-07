@@ -146,6 +146,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")
+                    .role(role)
                     .build();
 
             writeJsonResponse(response, ApiResponse.of(ResultCode.LOGIN_SUCCESS, loginResponse));
