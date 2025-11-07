@@ -292,6 +292,7 @@ public class OrderService {
                                     .id(orderItem.getId())
                                     .productId(orderItem.getProduct().getId())
                                     .productName(orderItem.getProduct().getName())
+                                    .productImageUrl(orderItem.getProduct().getImageUrl())
                                     .quantity(orderItem.getQuantity())
                                     .price(orderItem.getPrice())
                                     .totalPrice(orderItem.getTotalPrice());
@@ -354,6 +355,9 @@ public class OrderService {
         String representativeProductName = order.getOrderItems().isEmpty() ?
                 "상품 없음" : order.getOrderItems().get(0).getProduct().getName();
 
+        String representativeProductImageUrl = order.getOrderItems().isEmpty() ?
+                null : order.getOrderItems().get(0).getProduct().getImageUrl();
+
         if (order.getOrderItems().size() > 1) {
             representativeProductName += " 외 " + (order.getOrderItems().size() - 1) + "개";
         }
@@ -393,6 +397,7 @@ public class OrderService {
                 .recipientName(order.getRecipientName())
                 .itemCount(order.getOrderItems().size())
                 .representativeProductName(representativeProductName)
+                .representativeProductImageUrl(representativeProductImageUrl)
                 .estimatedDeliveryDate(order.getCreatedAt().plusDays(2))
                 .payment(paymentDto)
                 .delivery(deliveryDto)

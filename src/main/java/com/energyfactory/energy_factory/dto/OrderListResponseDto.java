@@ -47,6 +47,9 @@ public class OrderListResponseDto {
         @Schema(description = "대표 상품명", example = "한우 등심 500g")
         private String representativeProductName;
 
+        @Schema(description = "대표 상품 이미지 URL", example = "https://example.com/image.jpg")
+        private String representativeProductImageUrl;
+
         @Schema(description = "배송 완료 예정일", example = "2024-01-03T10:00:00")
         private LocalDateTime estimatedDeliveryDate;
 
