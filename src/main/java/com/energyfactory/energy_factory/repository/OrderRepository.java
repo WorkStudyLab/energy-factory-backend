@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -28,6 +29,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 사용자의 특정 결제상태 주문 조회
     Page<Order> findByUserAndPaymentStatusOrderByCreatedAtDesc(User user, PaymentStatus paymentStatus, Pageable pageable);
+
+    // 사용자의 특정 결제상태가 아닌 주문 조회
+    Page<Order> findByUserAndPaymentStatusNotOrderByCreatedAtDesc(User user, PaymentStatus paymentStatus, Pageable pageable);
 
     // 사용자의 상태별, 결제상태별 주문 조회
     Page<Order> findByUserAndStatusAndPaymentStatusOrderByCreatedAtDesc(
@@ -57,4 +61,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 특정 사용자의 모든 주문 삭제 (탈퇴 시 사용)
     void deleteByUser(User user);
+
+    // 타임아웃된 PENDING 주문 조회 (재고 예약 해제용)
+    @Query("SELECT o FROM Order o WHERE o.paymentStatus = :paymentStatus AND o.createdAt < :cutoffTime")
+    List<Order> findTimeoutOrders(@Param("paymentStatus") PaymentStatus paymentStatus,
+                                   @Param("cutoffTime") LocalDateTime cutoffTime);
 }

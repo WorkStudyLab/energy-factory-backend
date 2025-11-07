@@ -26,6 +26,12 @@ public class ProductVariantDto {
     @Schema(description = "해당 변형의 가격", example = "29900.00")
     private BigDecimal price;
 
-    @Schema(description = "해당 변형의 재고", example = "50")
+    @Schema(description = "총 재고", example = "50")
     private Long stock;
+
+    @Schema(description = "예약된 재고 (결제 진행 중)", example = "5")
+    private Long reservedStock;
+
+    @Schema(description = "판매 가능한 재고 (총재고 - 예약재고)", example = "45")
+    private Long availableStock;
 }

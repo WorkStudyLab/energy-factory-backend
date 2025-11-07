@@ -77,8 +77,8 @@ public class OrderService {
                 }
             }
 
-            // 재고 확인
-            if (!variant.hasStock(itemDto.getQuantity().longValue())) {
+            // 판매 가능한 재고 확인 (총재고 - 예약재고)
+            if (!variant.hasAvailableStock(itemDto.getQuantity().longValue())) {
                 throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
             }
 
@@ -94,8 +94,8 @@ public class OrderService {
             // 총액 누적
             totalPrice = totalPrice.add(orderItem.getTotalPrice());
 
-            // 재고 차감
-            variant.decreaseStock(itemDto.getQuantity().longValue());
+            // 재고 예약 (결제 완료 시 확정됨)
+            variant.reserveStock(itemDto.getQuantity().longValue());
         }
 
         // 4. 총액 설정 및 주문 저장
@@ -149,7 +149,8 @@ public class OrderService {
             PaymentStatus payStatus = PaymentStatus.valueOf(paymentStatus.toUpperCase());
             orderPage = orderRepository.findByUserAndPaymentStatusOrderByCreatedAtDesc(user, payStatus, pageable);
         } else {
-            orderPage = orderRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+            // 기본: PENDING 주문 제외 (결제 완료된 주문만 표시)
+            orderPage = orderRepository.findByUserAndPaymentStatusNotOrderByCreatedAtDesc(user, PaymentStatus.PENDING, pageable);
         }
 
         List<OrderListResponseDto.OrderSummaryDto> orders = orderPage.getContent().stream()
@@ -219,16 +220,25 @@ public class OrderService {
             throw new BusinessException(ResultCode.CANNOT_CANCEL_ORDER);
         }
 
-        // 주문 취소
-        order.cancel();
+        // 주문 상태에 따라 재고 처리
+        PaymentStatus paymentStatus = order.getPaymentStatus();
 
-        // 재고 복원
         for (OrderItem orderItem : order.getOrderItems()) {
             ProductVariant variant = orderItem.getProductVariant();
             if (variant != null) {
-                variant.increaseStock(orderItem.getQuantity().longValue());
+                if (paymentStatus == PaymentStatus.PENDING) {
+                    // 결제 전 취소: 예약만 해제
+                    variant.releaseReservedStock(orderItem.getQuantity().longValue());
+                } else if (paymentStatus == PaymentStatus.COMPLETED) {
+                    // 결제 후 취소: 총재고 복원
+                    variant.increaseStock(orderItem.getQuantity().longValue());
+                }
+                // FAILED, REFUNDED 등의 경우는 재고 처리 불필요
             }
         }
+
+        // 주문 취소
+        order.cancel();
 
         return convertToResponseDto(order);
     }
@@ -329,8 +339,8 @@ public class OrderService {
             Product product = cartItem.getProduct();
             Integer quantity = cartItem.getQuantity();
 
-            // 재고 확인 (차감하지 않고 확인만)
-            if (!variant.hasStock(quantity.longValue())) {
+            // 판매 가능한 재고 확인 (총재고 - 예약재고)
+            if (!variant.hasAvailableStock(quantity.longValue())) {
                 throw new BusinessException(ResultCode.INSUFFICIENT_STOCK);
             }
 
@@ -341,7 +351,8 @@ public class OrderService {
             // 총액 누적
             totalPrice = totalPrice.add(orderItem.getTotalPrice());
 
-            // 재고 차감은 결제 완료 후에 수행
+            // 재고 예약 (결제 완료 시 확정됨)
+            variant.reserveStock(quantity.longValue());
         }
 
         // 5. 총액 설정 및 주문 저장

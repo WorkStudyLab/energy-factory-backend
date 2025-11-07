@@ -339,6 +339,8 @@ public class ProductService {
                         .name(variant.getVariantName())
                         .price(variant.getPrice())
                         .stock(variant.getStock())
+                        .reservedStock(variant.getReservedStock())
+                        .availableStock(variant.getAvailableStock())
                         .build())
                 .collect(Collectors.toList());
     }

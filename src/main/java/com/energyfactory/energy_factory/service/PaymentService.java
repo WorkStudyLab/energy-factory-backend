@@ -134,12 +134,14 @@ public class PaymentService {
             savedPayment.completePayment();
             order.updatePaymentStatus(PaymentStatus.COMPLETED);
 
-            // 결제 완료 시 재고 차감
+            // 결제 완료 시 예약 확정 (예약 해제 + 총재고 차감)
             order.getOrderItems().forEach(orderItem -> {
                 if (orderItem.getProductVariant() != null) {
-                    orderItem.getProductVariant().decreaseStock(orderItem.getQuantity().longValue());
-                    log.info("재고 차감 - 상품변형 ID: {}, 수량: {}",
-                            orderItem.getProductVariant().getId(), orderItem.getQuantity());
+                    orderItem.getProductVariant().confirmReservedStock(orderItem.getQuantity().longValue());
+                    log.info("재고 예약 확정 - 상품변형 ID: {}, 수량: {}, 남은 재고: {}",
+                            orderItem.getProductVariant().getId(),
+                            orderItem.getQuantity(),
+                            orderItem.getProductVariant().getAvailableStock());
                 }
             });
 
@@ -201,10 +203,14 @@ public class PaymentService {
             order.updatePaymentStatus(PaymentStatus.REFUNDED);
             order.updateStatus(OrderStatus.CANCELLED);
 
-            // 재고 복원
+            // 재고 복원 (이미 결제 완료된 건이므로 총재고만 복원)
             order.getOrderItems().forEach(orderItem -> {
                 if (orderItem.getProductVariant() != null) {
                     orderItem.getProductVariant().increaseStock(orderItem.getQuantity().longValue());
+                    log.info("재고 복원 - 상품변형 ID: {}, 수량: {}, 복원 후 재고: {}",
+                            orderItem.getProductVariant().getId(),
+                            orderItem.getQuantity(),
+                            orderItem.getProductVariant().getAvailableStock());
                 }
             });
 
