@@ -62,49 +62,34 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{orderNumber}")
     @Operation(
         summary = "주문 상세 조회",
-        description = "본인의 주문 상세 정보를 조회합니다. 본인 소유가 아닌 주문 조회 시 403 에러 발생\n\n" +
-                     "- id: 주문 ID (orderId)"
+        description = "본인의 주문 상세 정보를 주문번호로 조회합니다. 본인 소유가 아닌 주문 조회 시 403 에러 발생\n\n" +
+                     "- orderNumber: 주문 번호 (예: 20251107001)"
     )
     public ResponseEntity<ApiResponse<OrderResponseDto>> getOrder(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id
-    ) {
-        Long userId = userDetails.getUser().getId();
-        OrderResponseDto order = orderService.getOrder(userId, id);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, order));
-    }
-
-    @PatchMapping("/{id}/cancel")
-    @Operation(
-        summary = "주문 취소",
-        description = "본인의 주문을 취소합니다. 본인 소유가 아닌 주문 취소 시 403 에러 발생\n\n" +
-                     "- id: 주문 ID (orderId)"
-    )
-    public ResponseEntity<ApiResponse<OrderResponseDto>> cancelOrder(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long id,
-            @RequestParam(required = false) String reason
-    ) {
-        Long userId = userDetails.getUser().getId();
-        OrderResponseDto order = orderService.cancelOrder(userId, id, reason);
-        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, order));
-    }
-
-    @GetMapping("/number/{orderNumber}")
-    @Operation(
-        summary = "주문번호로 주문 조회",
-        description = "본인의 주문을 주문번호로 조회합니다. 본인 소유가 아닌 주문 조회 시 403 에러 발생\n\n" +
-                     "- orderNumber: 주문 번호"
-    )
-    public ResponseEntity<ApiResponse<OrderResponseDto>> getOrderByNumber(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long orderNumber
     ) {
         Long userId = userDetails.getUser().getId();
         OrderResponseDto order = orderService.getOrderByNumber(userId, orderNumber);
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, order));
+    }
+
+    @PatchMapping("/{orderNumber}/cancel")
+    @Operation(
+        summary = "주문 취소",
+        description = "본인의 주문을 취소합니다. 본인 소유가 아닌 주문 취소 시 403 에러 발생\n\n" +
+                     "- orderNumber: 주문 번호 (예: 20251107001)"
+    )
+    public ResponseEntity<ApiResponse<OrderResponseDto>> cancelOrder(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long orderNumber,
+            @RequestParam(required = false) String reason
+    ) {
+        Long userId = userDetails.getUser().getId();
+        OrderResponseDto order = orderService.cancelOrderByNumber(userId, orderNumber, reason);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, order));
     }
 
@@ -122,20 +107,6 @@ public class OrderController {
     ) {
         Long userId = userDetails.getUser().getId();
         OrderResponseDto order = orderService.createOrderFromCart(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
-    }
-
-    @PostMapping("/test/create")
-    @Operation(
-        summary = "테스트용 주문 생성 (인증 불필요)",
-        description = "결제 테스트를 위한 간단한 주문을 생성합니다. 실제 상품/배송지 없이도 동작합니다."
-    )
-    public ResponseEntity<ApiResponse<OrderResponseDto>> createTestOrder(
-            @RequestParam(defaultValue = "3") Long userId,
-            @RequestParam(defaultValue = "50000") Double amount,
-            @RequestParam(defaultValue = "테스트 상품") String orderName
-    ) {
-        OrderResponseDto order = orderService.createTestOrder(userId, amount, orderName);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
     }
 }

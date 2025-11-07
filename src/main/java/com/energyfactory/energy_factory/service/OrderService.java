@@ -243,6 +243,47 @@ public class OrderService {
         return convertToResponseDto(order);
     }
 
+    @Transactional
+    public OrderResponseDto cancelOrderByNumber(Long userId, Long orderNumber, String reason) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_FOUND));
+
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
+
+        // 주문이 해당 사용자의 것인지 확인
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new BusinessException(ResultCode.ACCESS_DENIED);
+        }
+
+        // 취소 가능한 상태인지 확인
+        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BusinessException(ResultCode.CANNOT_CANCEL_ORDER);
+        }
+
+        // 주문 상태에 따라 재고 처리
+        PaymentStatus paymentStatus = order.getPaymentStatus();
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            ProductVariant variant = orderItem.getProductVariant();
+            if (variant != null) {
+                if (paymentStatus == PaymentStatus.PENDING) {
+                    // 결제 전 취소: 예약만 해제
+                    variant.releaseReservedStock(orderItem.getQuantity().longValue());
+                } else if (paymentStatus == PaymentStatus.COMPLETED) {
+                    // 결제 후 취소: 총재고 복원
+                    variant.increaseStock(orderItem.getQuantity().longValue());
+                }
+                // FAILED, REFUNDED 등의 경우는 재고 처리 불필요
+            }
+        }
+
+        // 주문 취소
+        order.cancel();
+
+        return convertToResponseDto(order);
+    }
+
     private OrderResponseDto convertToResponseDto(Order order) {
         List<OrderResponseDto.OrderItemResponseDto> orderItemDtos = order.getOrderItems().stream()
                 .map(orderItem -> {
@@ -385,38 +426,6 @@ public class OrderService {
         orderItemRepository.saveAll(savedOrder.getOrderItems());
 
         // 7. 장바구니 삭제는 결제 완료 후에 수행
-
-        return convertToResponseDto(savedOrder);
-    }
-
-    /**
-     * 테스트용 주문 생성 (결제 테스트용)
-     * 실제 상품이나 배송지 없이도 주문을 생성합니다.
-     */
-    @Transactional
-    public OrderResponseDto createTestOrder(Long userId, Double amount, String orderName) {
-        // 1. 사용자 조회 (없으면 기본 사용자 생성)
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-            // 테스트용 사용자가 없으면 간단히 처리
-            throw new BusinessException(ResultCode.USER_NOT_FOUND);
-        }
-
-        // 2. 테스트 주문 생성
-        Order order = Order.builder()
-                .user(user)
-                .orderNumber(Order.generateOrderNumber())
-                .recipientName("테스트 수령인")
-                .phoneNumber("010-0000-0000")
-                .postalCode("12345")
-                .addressLine1("테스트 주소")
-                .addressLine2("상세주소")
-                .totalPrice(BigDecimal.valueOf(amount))
-                .status(OrderStatus.PENDING)
-                .paymentStatus(PaymentStatus.PENDING)
-                .build();
-
-        Order savedOrder = orderRepository.save(order);
 
         return convertToResponseDto(savedOrder);
     }
