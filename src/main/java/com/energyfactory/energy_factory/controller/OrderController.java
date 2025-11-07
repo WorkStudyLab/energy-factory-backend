@@ -1,6 +1,10 @@
 package com.energyfactory.energy_factory.controller;
 
-import com.energyfactory.energy_factory.dto.*;
+import com.energyfactory.energy_factory.dto.ApiResponse;
+import com.energyfactory.energy_factory.dto.CustomUserDetails;
+import com.energyfactory.energy_factory.dto.OrderCreateRequestDto;
+import com.energyfactory.energy_factory.dto.OrderListResponseDto;
+import com.energyfactory.energy_factory.dto.OrderResponseDto;
 import com.energyfactory.energy_factory.service.OrderService;
 import com.energyfactory.energy_factory.utils.enums.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -91,22 +95,5 @@ public class OrderController {
         Long userId = userDetails.getUser().getId();
         OrderResponseDto order = orderService.cancelOrderByNumber(userId, orderNumber, reason);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS, order));
-    }
-
-    @PostMapping("/from-cart")
-    @Operation(
-        summary = "장바구니 기반 주문 생성",
-        description = "선택한 장바구니 아이템들로 주문을 생성합니다.\n\n" +
-                     "- 재고를 자동으로 차감합니다\n" +
-                     "- 주문 성공 시 장바구니에서 자동 삭제됩니다\n" +
-                     "- 트랜잭션 처리로 일관성을 보장합니다"
-    )
-    public ResponseEntity<ApiResponse<OrderResponseDto>> createOrderFromCart(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody OrderFromCartRequestDto request
-    ) {
-        Long userId = userDetails.getUser().getId();
-        OrderResponseDto order = orderService.createOrderFromCart(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of(ResultCode.SUCCESS_POST, order));
     }
 }
