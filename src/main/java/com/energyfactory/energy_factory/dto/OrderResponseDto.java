@@ -52,6 +52,9 @@ public class OrderResponseDto {
     @Schema(description = "결제 정보")
     private PaymentResponseDto payment;
 
+    @Schema(description = "배송 정보")
+    private DeliveryInfoDto deliveryInfo;
+
     @Getter
     @Builder
     @Schema(description = "주문 상품 정보")
@@ -107,5 +110,19 @@ public class OrderResponseDto {
         @Schema(description = "결제 완료 시각", example = "2024-01-01T10:05:00")
         private LocalDateTime paidAt;
 
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "배송 정보")
+    public static class DeliveryInfoDto {
+        @Schema(description = "수령인", example = "홍길동")
+        private String recipientName;
+
+        @Schema(description = "배송 주소", example = "서울시 강남구 테헤란로 123 456호")
+        private String address;
+
+        @Schema(description = "배송 완료 예정일", example = "2024-01-03T10:00:00")
+        private LocalDateTime estimatedDeliveryDate;
     }
 }

@@ -320,6 +320,18 @@ public class OrderService {
                     .build();
         }
 
+        // 배송 정보 생성
+        String fullAddress = order.getAddressLine1();
+        if (order.getAddressLine2() != null && !order.getAddressLine2().isEmpty()) {
+            fullAddress += " " + order.getAddressLine2();
+        }
+
+        OrderResponseDto.DeliveryInfoDto deliveryInfo = OrderResponseDto.DeliveryInfoDto.builder()
+                .recipientName(order.getRecipientName())
+                .address(fullAddress)
+                .estimatedDeliveryDate(order.getCreatedAt().plusDays(2))
+                .build();
+
         return OrderResponseDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -334,16 +346,43 @@ public class OrderService {
                 .addressLine2(order.getAddressLine2())
                 .orderItems(orderItemDtos)
                 .payment(paymentDto)
+                .deliveryInfo(deliveryInfo)
                 .build();
     }
 
     private OrderListResponseDto.OrderSummaryDto convertToSummaryDto(Order order) {
-        String representativeProductName = order.getOrderItems().isEmpty() ? 
+        String representativeProductName = order.getOrderItems().isEmpty() ?
                 "상품 없음" : order.getOrderItems().get(0).getProduct().getName();
-        
+
         if (order.getOrderItems().size() > 1) {
             representativeProductName += " 외 " + (order.getOrderItems().size() - 1) + "개";
         }
+
+        // Payment 정보 변환 (가장 최신 payment 사용)
+        OrderListResponseDto.PaymentDto paymentDto = null;
+        if (!order.getPayments().isEmpty()) {
+            Payment latestPayment = order.getPayments().get(order.getPayments().size() - 1);
+            paymentDto = OrderListResponseDto.PaymentDto.builder()
+                    .id(latestPayment.getId())
+                    .paymentMethod(latestPayment.getPaymentMethod().name())
+                    .paymentStatus(latestPayment.getPaymentStatus().name())
+                    .transactionId(latestPayment.getTransactionId())
+                    .amount(latestPayment.getAmount())
+                    .paidAt(latestPayment.getPaidAt())
+                    .build();
+        }
+
+        // 배송 정보 생성
+        String fullAddress = order.getAddressLine1();
+        if (order.getAddressLine2() != null && !order.getAddressLine2().isEmpty()) {
+            fullAddress += " " + order.getAddressLine2();
+        }
+
+        OrderListResponseDto.DeliveryDto deliveryDto = OrderListResponseDto.DeliveryDto.builder()
+                .recipientName(order.getRecipientName())
+                .address(fullAddress)
+                .estimatedDeliveryDate(order.getCreatedAt().plusDays(2))
+                .build();
 
         return OrderListResponseDto.OrderSummaryDto.builder()
                 .id(order.getId())
@@ -354,6 +393,9 @@ public class OrderService {
                 .recipientName(order.getRecipientName())
                 .itemCount(order.getOrderItems().size())
                 .representativeProductName(representativeProductName)
+                .estimatedDeliveryDate(order.getCreatedAt().plusDays(2))
+                .payment(paymentDto)
+                .delivery(deliveryDto)
                 .build();
     }
 

@@ -47,6 +47,52 @@ public class OrderListResponseDto {
         @Schema(description = "대표 상품명", example = "한우 등심 500g")
         private String representativeProductName;
 
+        @Schema(description = "배송 완료 예정일", example = "2024-01-03T10:00:00")
+        private LocalDateTime estimatedDeliveryDate;
+
+        @Schema(description = "결제 정보")
+        private PaymentDto payment;
+
+        @Schema(description = "배송 정보")
+        private DeliveryDto delivery;
+
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "결제 정보")
+    public static class PaymentDto {
+        @Schema(description = "결제 ID", example = "1")
+        private Long id;
+
+        @Schema(description = "결제 수단", example = "CREDIT_CARD")
+        private String paymentMethod;
+
+        @Schema(description = "결제 상태", example = "COMPLETED")
+        private String paymentStatus;
+
+        @Schema(description = "PG사 거래 ID", example = "pg_transaction_123")
+        private String transactionId;
+
+        @Schema(description = "결제 금액", example = "59800.00")
+        private BigDecimal amount;
+
+        @Schema(description = "결제 완료 시각", example = "2024-01-01T10:05:00")
+        private LocalDateTime paidAt;
+    }
+
+    @Getter
+    @Builder
+    @Schema(description = "배송 정보")
+    public static class DeliveryDto {
+        @Schema(description = "수령인", example = "홍길동")
+        private String recipientName;
+
+        @Schema(description = "배송 주소", example = "서울시 강남구 테헤란로 123 456호")
+        private String address;
+
+        @Schema(description = "배송 완료 예정일", example = "2024-01-03T10:00:00")
+        private LocalDateTime estimatedDeliveryDate;
     }
 
     @Getter
