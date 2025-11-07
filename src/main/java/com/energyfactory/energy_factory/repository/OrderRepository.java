@@ -19,10 +19,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 주문번호로 주문 조회
-    Optional<Order> findByOrderNumber(Long orderNumber);
-
-    // 사용자의 주문 목록 조회 (최신순)
-    Page<Order> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.payments WHERE o.orderNumber = :orderNumber")
+    Optional<Order> findByOrderNumber(@Param("orderNumber") Long orderNumber);
 
     // 사용자의 특정 상태 주문 조회
     Page<Order> findByUserAndStatusOrderByCreatedAtDesc(User user, OrderStatus status, Pageable pageable);
@@ -49,18 +47,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                        @Param("startDate") LocalDateTime startDate, 
                                        @Param("endDate") LocalDateTime endDate, 
                                        Pageable pageable);
-
-    // 주문 상태별 통계
-    long countByStatus(OrderStatus status);
-
-    // 사용자의 주문 수 조회
-    long countByUser(User user);
-
-    // 사용자의 특정 상태 주문 수
-    long countByUserAndStatus(User user, OrderStatus status);
-
-    // 특정 사용자의 모든 주문 삭제 (탈퇴 시 사용)
-    void deleteByUser(User user);
 
     // 타임아웃된 PENDING 주문 조회 (재고 예약 해제용)
     @Query("SELECT o FROM Order o WHERE o.paymentStatus = :paymentStatus AND o.createdAt < :cutoffTime")

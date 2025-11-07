@@ -306,6 +306,20 @@ public class OrderService {
                 })
                 .collect(Collectors.toList());
 
+        // Payment 정보 변환 (가장 최신 payment 사용)
+        OrderResponseDto.PaymentResponseDto paymentDto = null;
+        if (!order.getPayments().isEmpty()) {
+            Payment latestPayment = order.getPayments().get(order.getPayments().size() - 1);
+            paymentDto = OrderResponseDto.PaymentResponseDto.builder()
+                    .id(latestPayment.getId())
+                    .paymentMethod(latestPayment.getPaymentMethod().name())
+                    .paymentStatus(latestPayment.getPaymentStatus().name())
+                    .transactionId(latestPayment.getTransactionId())
+                    .amount(latestPayment.getAmount())
+                    .paidAt(latestPayment.getPaidAt())
+                    .build();
+        }
+
         return OrderResponseDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -319,6 +333,7 @@ public class OrderService {
                 .addressLine1(order.getAddressLine1())
                 .addressLine2(order.getAddressLine2())
                 .orderItems(orderItemDtos)
+                .payment(paymentDto)
                 .build();
     }
 
