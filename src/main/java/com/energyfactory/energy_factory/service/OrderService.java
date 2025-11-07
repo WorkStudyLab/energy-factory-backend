@@ -29,6 +29,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final CartItemRepository cartItemRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public OrderResponseDto createOrder(Long userId, OrderCreateRequestDto requestDto) {
@@ -408,7 +409,32 @@ public class OrderService {
 
         return convertToResponseDto(savedOrder);
     }
-    
 
+    /**
+     * 주문 상태 변경 (관리자용)
+     * 주문 상태가 변경되면 사용자에게 SSE 알림 전송
+     *
+     * @param orderId 주문 ID
+     * @param newStatus 새로운 주문 상태
+     * @return 변경된 주문 정보
+     */
+    @Transactional
+    public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ResultCode.NOT_FOUND));
+
+        // 주문 상태 변경
+        order.updateStatus(newStatus);
+
+        // SSE 알림 전송
+        notificationService.sendOrderNotification(
+                order.getUser().getId(),
+                order.getId(),
+                order.getOrderNumber(),
+                newStatus.name()
+        );
+
+        return convertToResponseDto(order);
+    }
 
 }
