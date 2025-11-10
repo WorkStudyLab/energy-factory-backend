@@ -96,15 +96,20 @@ toss:
     secret-key: ${TOSS_SECRET_KEY}
     base-url: https://api.tosspayments.com
 
-# AWS S3 설정
+# AWS S3 설정 (선택적)
 cloud:
   aws:
     credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
     region:
       static: ap-northeast-2
     s3:
-      bucket: ${S3_BUCKET_NAME}
+      bucket: ${S3_BUCKET_NAME:}
     stack:
       auto: false
+
+# S3 활성화 여부
+aws:
+  s3:
+    enabled: ${AWS_S3_ENABLED:false}
