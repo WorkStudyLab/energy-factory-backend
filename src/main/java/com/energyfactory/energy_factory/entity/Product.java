@@ -141,15 +141,45 @@ public class Product {
         if (this.reviewCount <= 0) {
             throw new IllegalStateException("삭제할 리뷰가 없습니다.");
         }
-        
+
         BigDecimal totalRating = this.averageRating.multiply(new BigDecimal(this.reviewCount));
         totalRating = totalRating.subtract(removedRating);
         this.reviewCount -= 1;
-        
+
         if (this.reviewCount == 0) {
             this.averageRating = BigDecimal.ZERO;
         } else {
             this.averageRating = totalRating.divide(new BigDecimal(this.reviewCount), 1, BigDecimal.ROUND_HALF_UP);
         }
+    }
+
+    // 상품 정보 업데이트
+    public void update(String name, String category, BigDecimal price, String brand,
+                       BigDecimal originalPrice, Integer discount, BigDecimal weight,
+                       String weightUnit, String status, String imageUrl, String description,
+                       String storage, BigDecimal shippingFee, BigDecimal freeShippingThreshold,
+                       String estimatedDeliveryDays, BigDecimal scoreMuscleGain,
+                       BigDecimal scoreWeightLoss, BigDecimal scoreEnergy,
+                       BigDecimal scoreRecovery, BigDecimal scoreHealth) {
+        if (name != null) this.name = name;
+        if (category != null) this.category = category;
+        if (price != null) this.price = price;
+        if (brand != null) this.brand = brand;
+        if (originalPrice != null) this.originalPrice = originalPrice;
+        if (discount != null) this.discountRate = discount;
+        if (weight != null) this.weight = weight;
+        if (weightUnit != null) this.weightUnit = weightUnit;
+        if (status != null) this.status = status;
+        if (imageUrl != null) this.imageUrl = imageUrl;
+        if (description != null) this.description = description;
+        if (storage != null) this.storage = storage;
+        if (shippingFee != null) this.shippingFee = shippingFee;
+        if (freeShippingThreshold != null) this.freeShippingThreshold = freeShippingThreshold;
+        if (estimatedDeliveryDays != null) this.estimatedDeliveryDays = estimatedDeliveryDays;
+        if (scoreMuscleGain != null) this.scoreMuscleGain = scoreMuscleGain;
+        if (scoreWeightLoss != null) this.scoreWeightLoss = scoreWeightLoss;
+        if (scoreEnergy != null) this.scoreEnergy = scoreEnergy;
+        if (scoreRecovery != null) this.scoreRecovery = scoreRecovery;
+        if (scoreHealth != null) this.scoreHealth = scoreHealth;
     }
 }

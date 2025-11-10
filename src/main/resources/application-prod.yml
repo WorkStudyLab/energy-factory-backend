@@ -95,3 +95,16 @@ toss:
     client-key: ${TOSS_CLIENT_KEY}
     secret-key: ${TOSS_SECRET_KEY}
     base-url: https://api.tosspayments.com
+
+# AWS S3 설정
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+    stack:
+      auto: false

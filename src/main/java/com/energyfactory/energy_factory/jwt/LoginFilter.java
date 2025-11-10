@@ -26,12 +26,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final boolean cookieSecure;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
-    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
+
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService, boolean cookieSecure) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
+        this.cookieSecure = cookieSecure;
         setFilterProcessesUrl("/api/auth/login");
     }
 
@@ -198,7 +200,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);  // JavaScript 접근 방지 (XSS 방어)
-        cookie.setSecure(true);    // HTTPS에서만 쿠키 전송 (프로덕션 환경)
+        cookie.setSecure(cookieSecure);    // 환경에 따라 설정 (로컬: false, 프로덕션: true)
         cookie.setPath("/");       // 모든 경로에서 접근 가능
         cookie.setMaxAge(maxAge);  // 쿠키 만료 시간 (초)
         cookie.setAttribute("SameSite", "None");  // Cross-site 쿠키 허용 (Secure=true 필요)

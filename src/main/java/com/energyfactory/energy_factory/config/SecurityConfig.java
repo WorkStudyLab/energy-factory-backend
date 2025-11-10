@@ -40,6 +40,9 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil,
                          RefreshTokenService refreshTokenService, CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
                          CustomOAuth2UserService customOAuth2UserService, OAuth2SuccessHandler oAuth2SuccessHandler,
@@ -84,6 +87,9 @@ public class SecurityConfig {
                         // Swagger 관련
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
 
+                        // 관리자 전용 (ADMIN 권한 필요)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         // 인증 필요
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
@@ -109,7 +115,7 @@ public class SecurityConfig {
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil, userRepository), LoginFilter.class)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenService, cookieSecure), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http
